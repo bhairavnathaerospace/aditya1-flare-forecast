@@ -1,16 +1,46 @@
+# ---- Python --------------------------------------------------------------
 __pycache__/
 *.py[cod]
 .pytest_cache/
 .ruff_cache/
-outputs/checkpoints/*.pt
-outputs/reports/*.log
+.mypy_cache/
+.ipynb_checkpoints/
+*.egg-info/
+.venv/
+venv/
 
-# Download tooling and raw mission data -- never commit.
-# bulk-download.js held account credentials in plain text.
+# ---- Editors and OS ------------------------------------------------------
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# ---- Secrets and download tooling: never commit --------------------------
+# bulk-download.js held PRADAN account credentials in plain text.
+.env
+*.env
 bulk-download.js
 node_modules/
-al1_downloads/
+
+# ---- Raw mission data: lives in D:\Data (or the data drive), never here --
 data/
+al1_downloads/
 AL1_SLX_*/
 HLS_*/
-.env
+*.zip
+*.fits
+*.fits.gz
+*.fits.fz
+*.lc.gz
+*.pi.gz
+*.gti.gz
+*.nc
+
+# ---- Outputs -------------------------------------------------------------
+# Kept: reports (*.md, *.json), catalogues (*.csv), figures, frozen models.
+# Ignored: anything rebuilt from the raw data or re-run in minutes.
+outputs/**/cache/
+outputs/leadtime/pred_*.npz
+outputs/**/*.log
+outputs/checkpoints/*.pt

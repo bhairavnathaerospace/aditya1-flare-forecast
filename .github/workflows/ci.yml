@@ -57,3 +57,9 @@ jobs:
 
       - name: Physics tests (background, causal onset, Neupert lag, no leakage)
         run: python -m tests.test_physics
+
+      - name: Catalogue tests (soft rule, HEL1OS bursts, calibration, merge)
+        run: python -m tests.test_catalog
+
+      - name: Product tests (lead time, HXR spectra, timing audit, temperature, multi-hour)
+        run: python -m tests.test_products

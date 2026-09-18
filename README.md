@@ -22,6 +22,15 @@ either way, only the wall clock changes. `--device` overrides the auto-choice.
 > **Current results use GOES-18 flare classes as truth:
 > [`outputs/archive_goes/reports/CONCLUSIONS.md`](outputs/archive_goes/reports/CONCLUSIONS.md)**
 > (2024-02 → 2026-09, 7 187 GOES ≥ C flares). Each point is on the unseen 2026 test period:
+> - **Master flare catalogue** ([`outputs/catalog/CATALOG.md`](outputs/catalog/CATALOG.md)):
+>   SoLEXS and HEL1OS detect flares independently, then merge into 9 102 entries.
+>   - SoLEXS finds 86 % of C, 93 % of M and 100 % of X flares on the test period, matching the
+>     same rule run on GOES's own flux.
+>   - The class from SoLEXS alone agrees with GOES for 96 % of flares (median error 0.033 dex).
+>   - HEL1OS adds flares SoLEXS misses: 87 → 92 % for C, where HEL1OS events shifted by ±2 h only
+>     reach 89 %. It confirms rather than speeds up: its alerts are no earlier.
+>   - About half of the 230 HEL1OS-only flares are real small hot flares absent from the GOES list,
+>     confirmed by SoLEXS 6–12 keV.
 > - **Flare in progress:** nowcast TSS 0.77 for ≥ C and 0.79 for ≥ M; trees 0.745.
 > - **"Flare within 60 min":** TSS only 0.26. For ≥ M and ≥ X, the flux already reached ranks
 >   upcoming flares better than the model.
@@ -38,6 +47,25 @@ either way, only the wall clock changes. `--device` overrides the auto-choice.
 >   hard X-ray result here.
 > - **Physics:** hot onsets and the Neupert effect are confirmed, but add no forecast skill beyond
 >   the flux so far ([`outputs/physics/PHYSICS.md`](outputs/physics/PHYSICS.md)).
+> - **Lead time** ([`outputs/leadtime/LEADTIME.md`](outputs/leadtime/LEADTIME.md)): at ~2 false alarms
+>   a day, v3 warns before 92 % of ≥ C flares (9 % at flare-free times), median 6 min before the peak,
+>   10 points more flares than SoLEXS trend extrapolation. For M-level alerts, watching the SoLEXS
+>   flux does as well as the network. HEL1OS adds no lead time once false alarms are matched.
+> - **Hours ahead** ([`outputs/multihour/MULTIHOUR.md`](outputs/multihour/MULTIHOUR.md)): SoLEXS
+>   activity indicators forecast ≥ M flares 2-24 h ahead with AUC 0.79-0.84, significantly above
+>   persistence; the count of small (down to B-class) flares over 3 days is the strongest indicator.
+> - **Hard X-ray spectra** ([`outputs/hxr/HXR.md`](outputs/hxr/HXR.md)): 44 flares, median count index
+>   4.1; the two CZT detectors agree for 97 %; the spectrum hardens at every burst (soft-hard-soft)
+>   in 88 % of flares, tested with independent photons from the two detectors.
+> - **HEL1OS timing** ([`outputs/hxr/SUBSECOND.md`](outputs/hxr/SUBSECOND.md)): events are read out
+>   in batches of ~500-650, one every 2-8 s, so the L1 event lists and 1 s light curves resolve
+>   seconds, not milliseconds, below ~2 000 events/s. No sub-second hard X-ray structure is detected.
+> - **Temperatures** ([`outputs/temperature/TEMPERATURE.md`](outputs/temperature/TEMPERATURE.md)):
+>   SoLEXS continuum temperatures for ~2 000 flares, C 16 / M 17 / X 23 MK at the peak, hottest before
+>   the flux peak in 96 % of M flares; they track the GOES ratio and HEL1OS CdTe (rank 0.83).
+> - **Data quality:** four PRADAN SoLEXS day files (2024-07-26, 2024-09-01, 2024-10-02, 2025-02-20)
+>   repeat 6-12 h of the previous day under their own date; `scripts/solexs_duplicates.py` finds
+>   them with GOES as referee and the catalogue masks them. All four fall in the training period.
 >
 > The first archive run on SoLEXS-detector labels is kept for the record in
 > [`outputs/archive/reports/CONCLUSIONS.md`](outputs/archive/reports/CONCLUSIONS.md). Sections 1–2 below
@@ -412,6 +440,9 @@ solarflare/
     losses.py            focal, pinball, masked Huber, multi-task weighting
   physics/
     onset.py             hot-onset hardness, causal onset, Neupert lag, GOES XRS ratio
+  io/hel1os_events.py    HEL1OS photon lists: product choice, onboard-tick timing, pixel cuts
+  catalog.py             algorithmic nowcasting: SoLEXS rise rule, HEL1OS coincidence bursts,
+                         piecewise SoLEXS -> GOES calibration, soft+hard merge
   torch_data.py          Dataset wrapper
   pipeline.py            raw FITS -> loaders
   train.py               training loop
@@ -435,6 +466,14 @@ scripts/
   goes_crosscheck.py     SoLEXS vs GOES-18: flux calibration and label agreement
   fair_references.py     flux forecast vs "no change" in calibrated SoLEXS flux
   physics_catalog.py     per-flare hot-onset / Neupert catalogue + leakage-free test
+  master_catalog.py      master flare catalogue from both instruments, scored against GOES
+  catalog_figures.py     overview figure of the catalogue
+  lead_time.py           per-flare alert lead time vs false alarms (v3 and baselines, HEL1OS ablation)
+  solexs_duplicates.py   finds SoLEXS day files that repeat the previous day (GOES decides which is real)
+  hxr_spectra.py         HEL1OS CZT spectral index per flare, soft-hard-soft test
+  hxr_timing.py          HEL1OS timing audit (readout batches) and sub-second structure
+  solexs_temperature.py  SoLEXS continuum temperature per 20 s, checked against GOES and CdTe
+  multihour_forecast.py  2-24 h flare forecast from SoLEXS activity indicators
   learning_curve.py      skill vs how much training history is used
   recalibrate.py         isotonic calibration of the probability heads
   fusion_seeds_summary.py  the HEL1OS ablation across seeds and encoders
@@ -452,6 +491,8 @@ tests/
   test_forward.py        forward test: frozen normaliser, cutoff, append-only, GOES truth
   test_goes.py           GOES truth: flare list, targets, thresholds, scoring masks
   test_physics.py        hot onset, Neupert lag, and no leakage at the decision time
+  test_catalog.py        catalogue: soft rule, HEL1OS bursts, calibration, merging
+  test_products.py       lead time, HXR spectra, timing, temperature, multi-hour (synthetic truths)
 dashboard/
   flare_watch.template.html   the replay console, data baked in at build time
 outputs/                 one folder per experiment -- see outputs/README.md
@@ -460,6 +501,11 @@ outputs/                 one folder per experiment -- see outputs/README.md
   archive_goes_anchor/   anchored-flux retrain: best forecasts, v3
   archive_goes_patchtst/ PatchTST cross-validation
   physics/               hot-onset / Neupert catalogue, PHYSICS.md
+  catalog/               master flare catalogue (CSV), CATALOG.md, overview figure
+  leadtime/              LEADTIME.md: alert lead time and false alarms
+  hxr/                   HXR.md (spectral index), SUBSECOND.md (timing audit)
+  temperature/           TEMPERATURE.md: SoLEXS flare temperatures
+  multihour/             MULTIHOUR.md: 2-24 h forecasts
   dashboard/  share/     built pages and images
 ```
 
@@ -513,6 +559,17 @@ and `pyflakes`. Counts below are checks per suite.
 * `test_physics.py` (19) - hot onset and Neupert diagnostics. A decaying pre-flare background is
   followed but a rising one never extrapolated, the causal onset is known only at its last bin,
   the Neupert lag has the right sign, and decision-time features ignore every later sample.
+* `test_catalog.py` (42) - the master catalogue. Class strings round at the letter boundary, the
+  piecewise calibration follows a bent law, the soft rule alerts only after a full rise to 1.4x,
+  folds unconfirmed bumps into their flare and splits a new flare off a decay, Poisson noise is not
+  a flare, over-dispersed HEL1OS noise and one-detector glitches are not bursts, and merging keeps
+  track of which instrument was observing.
+* `test_products.py` (27) - the physical products, each on synthetic data with a known answer.
+  HEL1OS photon lists are read in time order from packet order, on onboard ticks despite a
+  jittering UTC stamp, with disabled pixels dropped and the newer version chosen; alert episodes,
+  overlaps and best-TSS thresholds; the power-law fit recovers its index with honest intervals;
+  readout batches, a known delay and a null covariance are measured correctly; the continuum
+  fit recovers a known temperature; copied SoLEXS hours are masked; multi-hour TSS thresholds.
 
 That second suite exists because defects kept reaching "done" without it: a
 failed PNG write destroyed a completed training run, `predict` shipped having
@@ -546,6 +603,12 @@ python -m solarflare.cli baselines                                 # climatology
 python -m solarflare.cli forecast --encoders tcn,ssm,gru,transformer,linear --folds 3
 python -m solarflare.cli fusion --encoder tcn --folds 3            # does HEL1OS add skill?
 python scripts/posthoc_event_definitions.py --data-root D:/Data --out-dir outputs/archive  # skill on >=3x/10x/30x flares
+python scripts/master_catalog.py                                   # master flare catalogue + GOES scoring
+python scripts/catalog_figures.py --day 2026-07-04                 # its overview figure
+python scripts/lead_time.py --predict && python scripts/lead_time.py  # alert lead time (GPU ~13 min, then ~1 min)
+python scripts/hxr_spectra.py && python scripts/hxr_timing.py      # HEL1OS spectra and timing audit
+python scripts/solexs_temperature.py                               # SoLEXS flare temperatures (~35 min)
+python scripts/multihour_forecast.py                               # 2-24 h forecasts
 python -m solarflare.cli report                                    # render RESULTS.md
 python -m solarflare.cli evaluate --checkpoint outputs/checkpoints/best.pt
 python -m solarflare.cli predict --output outputs/reports/predictions.csv
@@ -672,5 +735,6 @@ The nowcast model's calendar split puts nearly all simultaneous data (Jun–Sep
 2026) in the **test** period. Its modality ablation therefore measures fusion
 out of time, trained on only ~4 simultaneous days from 2024, which is why the
 fusion ablation above is the primary evidence.
-#   a d i t y a 1 - f l a r e - f o r e c a s t  
+#   a d i t y a 1 - f l a r e - f o r e c a s t 
+ 
  
