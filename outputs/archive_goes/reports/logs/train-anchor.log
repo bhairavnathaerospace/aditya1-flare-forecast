@@ -1,0 +1,110 @@
+cache: 1167 sources, 1167 up to date, 0 to process with 3 worker(s)
+cache: 1167 ok, 0 empty, 0 failed (0s this run)
+
+Data: 796.2 observed days in 72 segment(s) [2024-02-01 -> 2026-09-13]
+  SoLEXS 760.5 d, HEL1OS 111.9 d, simultaneous 76.3 d; 7187 flares detected
+  archive mode (>= 30 days): stride_seconds 40.0 -> 120.0, max_batches_per_epoch 0 -> 400
+Windows: 563472  split=global: train 250088 (thinned from 338083) / val 112664 / test 112665
+
+wrote 2 data figures to outputs\archive_goes_anchor\figures
+
+device=cuda  params=463,615  receptive field=541 steps (window 360)
+train batches=400  val batches=1761  test batches=1761
+ep   0 | loss 1.3783 | now 0.020 fore 0.076 occ 0.156 | vTSS 0.696 vTSSocc 0.322 vMAE 0.084 | score 0.5046  *
+ep   1 | loss 0.3082 | now 0.018 fore 0.049 occ 0.150 | vTSS 0.716 vTSSocc 0.325 vMAE 0.082 | score 0.5165  *
+ep   2 | loss -0.4567 | now 0.017 fore 0.047 occ 0.148 | vTSS 0.741 vTSSocc 0.329 vMAE 0.083 | score 0.5306  *
+ep   3 | loss -1.1581 | now 0.017 fore 0.046 occ 0.146 | vTSS 0.724 vTSSocc 0.321 vMAE 0.082 | score 0.5184
+ep   4 | loss -1.6031 | now 0.018 fore 0.046 occ 0.145 | vTSS 0.748 vTSSocc 0.333 vMAE 0.089 | score 0.5360  *
+ep   5 | loss -1.9088 | now 0.017 fore 0.046 occ 0.145 | vTSS 0.750 vTSSocc 0.326 vMAE 0.082 | score 0.5340
+ep   6 | loss -2.1412 | now 0.017 fore 0.045 occ 0.143 | vTSS 0.750 vTSSocc 0.341 vMAE 0.081 | score 0.5415  *
+ep   7 | loss -2.2428 | now 0.017 fore 0.045 occ 0.142 | vTSS 0.750 vTSSocc 0.317 vMAE 0.083 | score 0.5293
+ep   8 | loss -2.3386 | now 0.016 fore 0.044 occ 0.143 | vTSS 0.742 vTSSocc 0.314 vMAE 0.092 | score 0.5235
+ep   9 | loss -2.4202 | now 0.016 fore 0.043 occ 0.143 | vTSS 0.756 vTSSocc 0.337 vMAE 0.083 | score 0.5419  *
+ep  10 | loss -2.3963 | now 0.016 fore 0.043 occ 0.143 | vTSS 0.732 vTSSocc 0.299 vMAE 0.081 | score 0.5112
+ep  11 | loss -2.3496 | now 0.017 fore 0.044 occ 0.143 | vTSS 0.758 vTSSocc 0.336 vMAE 0.082 | score 0.5433  *
+ep  12 | loss -2.3984 | now 0.016 fore 0.043 occ 0.143 | vTSS 0.767 vTSSocc 0.385 vMAE 0.094 | score 0.5715  *
+ep  13 | loss -2.3991 | now 0.017 fore 0.044 occ 0.142 | vTSS 0.754 vTSSocc 0.332 vMAE 0.089 | score 0.5384
+ep  14 | loss -2.4294 | now 0.016 fore 0.043 occ 0.141 | vTSS 0.746 vTSSocc 0.338 vMAE 0.091 | score 0.5373
+ep  15 | loss -2.4344 | now 0.016 fore 0.043 occ 0.142 | vTSS 0.758 vTSSocc 0.323 vMAE 0.084 | score 0.5367
+ep  16 | loss -2.4466 | now 0.016 fore 0.043 occ 0.141 | vTSS 0.752 vTSSocc 0.337 vMAE 0.079 | score 0.5407
+ep  17 | loss -2.4882 | now 0.016 fore 0.043 occ 0.141 | vTSS 0.770 vTSSocc 0.336 vMAE 0.087 | score 0.5489
+ep  18 | loss -2.5276 | now 0.016 fore 0.043 occ 0.141 | vTSS 0.764 vTSSocc 0.367 vMAE 0.080 | score 0.5613
+ep  19 | loss -2.4830 | now 0.016 fore 0.043 occ 0.139 | vTSS 0.767 vTSSocc 0.353 vMAE 0.087 | score 0.5556
+ep  20 | loss -2.5729 | now 0.016 fore 0.043 occ 0.138 | vTSS 0.768 vTSSocc 0.361 vMAE 0.079 | score 0.5608
+ep  21 | loss -2.5110 | now 0.016 fore 0.043 occ 0.140 | vTSS 0.774 vTSSocc 0.355 vMAE 0.083 | score 0.5604
+ep  22 | loss -2.5678 | now 0.015 fore 0.043 occ 0.139 | vTSS 0.763 vTSSocc 0.349 vMAE 0.080 | score 0.5517
+ep  23 | loss -2.5242 | now 0.017 fore 0.043 occ 0.140 | vTSS 0.773 vTSSocc 0.373 vMAE 0.083 | score 0.5688
+ep  24 | loss -2.5517 | now 0.016 fore 0.043 occ 0.140 | vTSS 0.777 vTSSocc 0.376 vMAE 0.085 | score 0.5724  *
+ep  25 | loss -2.5831 | now 0.016 fore 0.043 occ 0.138 | vTSS 0.780 vTSSocc 0.353 vMAE 0.084 | score 0.5619
+ep  26 | loss -2.6598 | now 0.015 fore 0.042 occ 0.138 | vTSS 0.762 vTSSocc 0.352 vMAE 0.083 | score 0.5529
+ep  27 | loss -2.6165 | now 0.016 fore 0.042 occ 0.139 | vTSS 0.771 vTSSocc 0.380 vMAE 0.080 | score 0.5714
+ep  28 | loss -2.5782 | now 0.016 fore 0.042 occ 0.138 | vTSS 0.762 vTSSocc 0.341 vMAE 0.083 | score 0.5473
+ep  29 | loss -2.6080 | now 0.016 fore 0.042 occ 0.137 | vTSS 0.769 vTSSocc 0.342 vMAE 0.087 | score 0.5510
+ep  30 | loss -2.5827 | now 0.016 fore 0.043 occ 0.138 | vTSS 0.776 vTSSocc 0.348 vMAE 0.081 | score 0.5578
+ep  31 | loss -2.6071 | now 0.016 fore 0.042 occ 0.137 | vTSS 0.762 vTSSocc 0.355 vMAE 0.081 | score 0.5544
+ep  32 | loss -2.6133 | now 0.016 fore 0.042 occ 0.138 | vTSS 0.776 vTSSocc 0.361 vMAE 0.087 | score 0.5644
+ep  33 | loss -2.5968 | now 0.016 fore 0.042 occ 0.138 | vTSS 0.774 vTSSocc 0.377 vMAE 0.079 | score 0.5714
+ep  34 | loss -2.7045 | now 0.015 fore 0.042 occ 0.137 | vTSS 0.775 vTSSocc 0.343 vMAE 0.086 | score 0.5552
+ep  35 | loss -2.7287 | now 0.015 fore 0.041 occ 0.136 | vTSS 0.780 vTSSocc 0.384 vMAE 0.084 | score 0.5776  *
+ep  36 | loss -2.6653 | now 0.016 fore 0.042 occ 0.137 | vTSS 0.768 vTSSocc 0.378 vMAE 0.081 | score 0.5693
+ep  37 | loss -2.7288 | now 0.015 fore 0.042 occ 0.137 | vTSS 0.772 vTSSocc 0.371 vMAE 0.081 | score 0.5675
+ep  38 | loss -2.7663 | now 0.015 fore 0.041 occ 0.136 | vTSS 0.774 vTSSocc 0.371 vMAE 0.082 | score 0.5683
+ep  39 | loss -2.7250 | now 0.016 fore 0.042 occ 0.136 | vTSS 0.771 vTSSocc 0.375 vMAE 0.083 | score 0.5688
+ep  40 | loss -2.7621 | now 0.015 fore 0.041 occ 0.136 | vTSS 0.765 vTSSocc 0.354 vMAE 0.082 | score 0.5555
+ep  41 | loss -2.7189 | now 0.016 fore 0.042 occ 0.135 | vTSS 0.767 vTSSocc 0.354 vMAE 0.085 | score 0.5562
+ep  42 | loss -2.7280 | now 0.016 fore 0.042 occ 0.135 | vTSS 0.768 vTSSocc 0.356 vMAE 0.082 | score 0.5577
+ep  43 | loss -2.7136 | now 0.016 fore 0.042 occ 0.135 | vTSS 0.774 vTSSocc 0.378 vMAE 0.080 | score 0.5720
+ep  44 | loss -2.6943 | now 0.016 fore 0.042 occ 0.135 | vTSS 0.769 vTSSocc 0.366 vMAE 0.079 | score 0.5635
+ep  45 | loss -2.7472 | now 0.016 fore 0.041 occ 0.135 | vTSS 0.778 vTSSocc 0.377 vMAE 0.083 | score 0.5732
+ep  46 | loss -2.7918 | now 0.015 fore 0.041 occ 0.135 | vTSS 0.774 vTSSocc 0.364 vMAE 0.079 | score 0.5650
+ep  47 | loss -2.7987 | now 0.015 fore 0.041 occ 0.135 | vTSS 0.773 vTSSocc 0.368 vMAE 0.081 | score 0.5660
+early stop at epoch 47 (best 35)
+
+trained 48 epochs in 12868.9s; best epoch 35 score 0.5776
+checkpoint: outputs\archive_goes_anchor\checkpoints\best.pt
+
+==========================================================================
+TEST-SET EVALUATION
+==========================================================================
+
+[1] Nowcast: flare in progress   (threshold 0.34 fitted on validation)
+    base rate 0.083   TSS 0.775   HSS 0.645   AUC 0.9446
+    POD 0.830  FAR 0.424  CSI 0.515  F1 0.680
+    Brier 0.0593   BSS vs climatology 0.2211
+    TP 7668.0 FP 5647.0 FN 1568.0 TN 96400.0
+
+[2] Nowcast: flare phase   accuracy 0.876   macro-F1 0.626
+    quiet  P 0.987 R 0.891 F1 0.937  n=102047
+    rise   P 0.212 R 0.573 F1 0.309  n=4165
+    peak   P 0.537 R 0.690 F1 0.604  n=2029
+    decay  P 0.518 R 0.892 F1 0.655  n=3042
+
+[3] Forecast: flare within horizon
+     horizon    base     TSS     HSS     POD     FAR     AUC      BSS
+       15min   0.141   0.472   0.478   0.542   0.441   0.812   -0.069
+       30min   0.193   0.366   0.377   0.474   0.488   0.757   -0.074
+       60min   0.282   0.279   0.288   0.453   0.495   0.704   -0.046
+
+[4] Nowcast regression (log flux)   MAE 0.0603  RMSE 0.1112  R2 0.8885
+
+[5] Forecast regression (log flux), median quantile
+     horizon     RMSE  persist     clim  vs_pers  vs_clim    corr   cover
+        1min   0.1173   0.0214   0.5709   -4.478    0.795   0.939   0.714
+        5min   0.1311   0.0727   0.5708   -0.803    0.770   0.923   0.732
+       15min   0.1641   0.1326   0.5707   -0.237    0.712   0.872   0.743
+       30min   0.1897   0.1742   0.5704   -0.089    0.667   0.822   0.744
+       60min   0.2123   0.2112   0.5701   -0.005    0.628   0.771   0.747
+    (skill > 0 beats that reference. Nominal interval coverage 0.80.)
+    Beating persistence but NOT climatology, with corr ~ 0, means
+    the model has fallen back to predicting the mean at that horizon.
+
+[6] Ongoing-event peak   time-to-peak MAE 5.1 min   log-peak-flux MAE 0.142  (n=9236)
+
+[7] Modality ablation (flare-in-progress skill on test)
+          both  TSS 0.7749  AUC 0.9446
+     soft_only  TSS 0.7409  AUC 0.9407
+     hard_only  TSS 0.3519  AUC 0.7707
+    clock_only  TSS 0.0000  AUC 0.5001
+
+figures: outputs\archive_goes_anchor\figures
+report:  outputs\archive_goes_anchor\reports\evaluation.json

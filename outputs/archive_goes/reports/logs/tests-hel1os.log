@@ -1,0 +1,48 @@
+Running 9 HEL1OS test groups
+
+test_cdte_bands_of_different_length_and_phase_all_kept:
+  PASS  every CdTe band is kept with its real energy edges
+  PASS  bands are aligned on one 1 s grid, not a union of phases
+  PASS  a sample lands in the same slot in every band despite phase offsets
+
+test_end_to_end_cache_to_features:
+  PASS  both products cached
+  PASS  second build reuses the cache
+  PASS  48 hard features, named
+  PASS  features come from the newer version and keep detectors apart
+  PASS  no NaN or inf reaches the model input
+
+test_fill_rule_still_rejects_fill_rows:
+  PASS  masked mean is the sampled rate, not diluted by fill rows
+
+test_index_groups_detectors_into_products:
+  PASS  one source per product, not per detector file
+  PASS  versions parsed
+  PASS  half-extracted products are skipped
+
+test_raw_layout_keeps_detectors_apart:
+  PASS  all three detector files are read
+  PASS  a CZT1 file fills only CZT1 columns
+  PASS  merged product keeps CZT1 (100) and CZT2 (50) in separate columns
+  PASS  CdTe is merged in too
+  PASS  CZT2 columns never contain CZT1 values
+  PASS  product version becomes stitching priority
+  PASS  absent detector (CdTe2) has zero coverage, not NaN
+
+test_sliding_percentile_matches_numpy:
+  PASS  sliding percentile == numpy to rounding (<=1e-12), same NaN pattern
+
+test_stitch_prefers_newer_version:
+  PASS  V211 wins where present even with lower coverage (order 111 first)
+  PASS  V211 wins where present even with lower coverage (order 211 first)
+  PASS  equal priority still falls back to better coverage
+
+test_unknown_detector_is_an_error_not_a_silent_merge:
+  PASS  unknown detector raises
+
+test_zero_count_samples_are_real_zeros:
+  PASS  slots are sampled at the telemetry cadence (1 in 6)
+  PASS  a silent band at a sampled slot is a valid zero, not missing
+  PASS  fill slots (all bands zero, no error) stay missing
+
+All HEL1OS checks passed.

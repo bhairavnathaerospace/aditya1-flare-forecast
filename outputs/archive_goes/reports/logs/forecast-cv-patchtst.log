@@ -1,0 +1,3 @@
+usage: solarflare [-h]
+                  {cache,inspect,train,baselines,forecast,fusion,forward-test,report,evaluate,predict} ...
+solarflare: error: argument cmd: invalid choice: 'forecast-cv' (choose from 'cache', 'inspect', 'train', 'baselines', 'forecast', 'fusion', 'forward-test', 'report', 'evaluate', 'predict')

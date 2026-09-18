@@ -1,0 +1,53 @@
+cache: 1167 sources, 1167 up to date, 0 to process with 3 worker(s)
+cache: 1167 ok, 0 empty, 0 failed (0s this run)
+
+Data: 796.2 observed days in 72 segment(s) [2024-02-01 -> 2026-09-13]
+  SoLEXS 760.5 d, HEL1OS 111.9 d, simultaneous 76.3 d; 8944 flares detected
+  archive mode (>= 30 days): stride_seconds 40.0 -> 120.0, max_batches_per_epoch 0 -> 400
+Windows: 563472  split=global: train 319756 (thinned from 338083) / val 112664 / test 112665
+  rise samples : 272997 drawn from 8910 events (of 8944 detected)
+  lead time    : median 29.7 min, max 4842.7 min
+  large-flare threshold : 83.04 cts/s (46% of samples positive)
+  long-duration events  : 78% of samples
+  samples per event     : min 1, max 4843
+
+--- encoder: tcn ---
+  fold 0: train 69977 / test 70444 | peak MAE 0.8407 | ttp MAE 279.2 min | 2132.1s
+  fold 1: train 133707 / test 68049 | peak MAE 0.9037 | ttp MAE 129.5 min | 1400.9s
+  fold 2: train 194283 / test 58618 | peak MAE 0.7997 | ttp MAE 70.8 min | 1506.1s
+
+--- encoder: gru ---
+  fold 0: train 69977 / test 70444 | peak MAE 0.8660 | ttp MAE 283.9 min | 464.5s
+  fold 1: train 133707 / test 68049 | peak MAE 0.8756 | ttp MAE 126.6 min | 403.4s
+  fold 2: train 194283 / test 58618 | peak MAE 0.8401 | ttp MAE 76.1 min | 599.0s
+
+--- encoder: transformer ---
+  fold 0: train 69977 / test 70444 | peak MAE 0.8091 | ttp MAE 223.8 min | 1377.9s
+  fold 1: train 133707 / test 68049 | peak MAE 0.8923 | ttp MAE 128.5 min | 1414.6s
+  fold 2: train 194283 / test 58618 | peak MAE 0.8271 | ttp MAE 69.9 min | 1502.2s
+
+--- encoder: linear ---
+  fold 0: train 69977 / test 70444 | peak MAE 0.8319 | ttp MAE 272.7 min | 366.5s
+  fold 1: train 133707 / test 68049 | peak MAE 0.8956 | ttp MAE 129.5 min | 313.9s
+  fold 2: train 194283 / test 58618 | peak MAE 0.8331 | ttp MAE 70.6 min | 317.2s
+
+==========================================================================
+RISE-PHASE FORECASTING - grouped rolling-origin CV over events
+==========================================================================
+8910 events, 272997 rise samples, large-flare threshold 83.04 cts/s
+
+     encoder  folds       peak logMAE  skill/cur  skill/clim  ttp min  ttp skill  exc AUC    sec
+ transformer      3   0.8428 +/-0.0357      0.364       0.446    140.7      0.128    0.888   4295
+         tcn      3   0.8480 +/-0.0428      0.360       0.442    159.8      0.050    0.881   5039
+      linear      3   0.8535 +/-0.0298      0.356       0.439    157.6      0.059    0.885    998
+         gru      3   0.8606 +/-0.0150      0.351       0.434    162.2      0.027    0.868   1467
+
+reference MAE: current level 1.3256, training climatology 1.5264
+skill > 0 beats that reference; skill <= 0 means the model adds nothing over it.
+
+exceedance AUC rests on 3 fold(s) with both classes and 1267 positive event(s) in total; current flux alone scores AUC 0.858.
+
+Spread across folds is the number that matters: with a handful of
+events, a mean without its fold-to-fold scatter is not a result.
+
+wrote outputs\archive\reports\forecast_cv.json

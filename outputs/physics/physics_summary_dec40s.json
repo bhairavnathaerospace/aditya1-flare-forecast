@@ -1,0 +1,219 @@
+{
+  "n_flares": 6848,
+  "decision_s": 40.0,
+  "status": {
+    "ok": 5925,
+    "no_onset": 377,
+    "solexs_gap": 542,
+    "no_background": 4
+  },
+  "hot_onset": {
+    "C": {
+      "n": 4833,
+      "n_with_onset_hardness": 604,
+      "median_hardness_background": 0.0,
+      "median_hardness_onset": 0.1403482430377182,
+      "median_hardness_peak": 0.1036019678642108,
+      "median_onset_over_peak_hardness": 1.3603150282556173,
+      "median_onset_over_impulsive_hardness": 0.9984344404081383,
+      "frac_onset_at_least_80pct_of_peak_hardness": 0.9155629139072847,
+      "frac_onset_harder_than_background": 0.9503311258278145,
+      "median_goes_ratio_onset_over_peak": null,
+      "frac_goes_onset_at_least_80pct_of_peak": null,
+      "median_onset_to_impulsive_min": 2.6666666666666665,
+      "median_onset_to_peak_min": 5.666666666666667,
+      "median_onset_minus_goes_start_min": 2.3333333333333335
+    },
+    "M": {
+      "n": 1025,
+      "n_with_onset_hardness": 474,
+      "median_hardness_background": 0.00999392281616638,
+      "median_hardness_onset": 0.14619483044135648,
+      "median_hardness_peak": 0.14140516216627716,
+      "median_onset_over_peak_hardness": 1.079007816938915,
+      "median_onset_over_impulsive_hardness": 0.8515974391248906,
+      "frac_onset_at_least_80pct_of_peak_hardness": 0.7215189873417721,
+      "frac_onset_harder_than_background": 0.9662447257383966,
+      "median_goes_ratio_onset_over_peak": null,
+      "frac_goes_onset_at_least_80pct_of_peak": null,
+      "median_onset_to_impulsive_min": 5.333333333333333,
+      "median_onset_to_peak_min": 9.333333333333334,
+      "median_onset_minus_goes_start_min": 2.0
+    },
+    "X": {
+      "n": 67,
+      "n_with_onset_hardness": 40,
+      "median_hardness_background": 0.013819116637012116,
+      "median_hardness_onset": 0.1725869764930728,
+      "median_hardness_peak": 0.2476569001866546,
+      "median_onset_over_peak_hardness": 0.7629616005143387,
+      "median_onset_over_impulsive_hardness": 0.524030155091892,
+      "frac_onset_at_least_80pct_of_peak_hardness": 0.475,
+      "frac_onset_harder_than_background": 0.925,
+      "median_goes_ratio_onset_over_peak": null,
+      "frac_goes_onset_at_least_80pct_of_peak": null,
+      "median_onset_to_impulsive_min": 8.0,
+      "median_onset_to_peak_min": 12.666666666666666,
+      "median_onset_minus_goes_start_min": 2.6666666666666665
+    }
+  },
+  "neupert": {
+    "n_hel1os_observed": 451,
+    "n_significant_hxr": 45,
+    "median_r_best": 0.7730337622517525,
+    "frac_r_best_above_0.5": 0.8666666666666667,
+    "median_lag_s": 0.0,
+    "lag_s_p25_p75": [
+      0.0,
+      40.0
+    ],
+    "median_hxr_peak_minus_steepest_sxr_rise_s": -20.0,
+    "by_class_n": {
+      "C": 12,
+      "M": 31,
+      "X": 2
+    }
+  },
+  "peak_forecast": {
+    "n_flares": 5441,
+    "n_test": 4352,
+    "decision": "causal SoLEXS onset + 40 s",
+    "target": "log10 GOES peak flux",
+    "folds": "rolling origin, 5 time blocks",
+    "mae_dex": {
+      "flux so far (SoLEXS)": 0.2195882578398214,
+      "+ onset hardness": 0.21822924159924417,
+      "+ GOES ratio at onset": 0.2195882578398214,
+      "current GOES level (reference)": 0.36728367494417546,
+      "training median (reference)": 0.34055685049954815
+    },
+    "mae_dex_by_class": {
+      "C": {
+        "flux so far (SoLEXS)": 0.172356740557657,
+        "+ onset hardness": 0.1709593591919145,
+        "+ GOES ratio at onset": 0.172356740557657,
+        "current GOES level (reference)": 0.2885167075061012,
+        "training median (reference)": 0.2881676230655906
+      },
+      "M": {
+        "flux so far (SoLEXS)": 0.4007844399060691,
+        "+ onset hardness": 0.3989218195979451,
+        "+ GOES ratio at onset": 0.4007844399060691,
+        "current GOES level (reference)": 0.692054843027256,
+        "training median (reference)": 0.5356949981628946
+      },
+      "X": {
+        "flux so far (SoLEXS)": 1.1880258476182999,
+        "+ onset hardness": 1.1992001547805322,
+        "+ GOES ratio at onset": 1.1880258476182999,
+        "current GOES level (reference)": 1.574499418611742,
+        "training median (reference)": 1.5202464473738382
+      }
+    },
+    "gain_vs_flux_so_far": {
+      "+ onset hardness": {
+        "mae_reduction_dex": 0.0013590162405772155,
+        "ci95": [
+          0.00023316009086915,
+          0.0023987288287981435
+        ],
+        "n": 4352
+      },
+      "+ GOES ratio at onset": {
+        "mae_reduction_dex": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 4352
+      },
+      "current GOES level (reference)": {
+        "mae_reduction_dex": -0.14769541710435408,
+        "ci95": [
+          -0.1550066513212928,
+          -0.140192887209783
+        ],
+        "n": 4352
+      }
+    },
+    "hel1os_subset": {
+      "n_flares": 413,
+      "n_test": 330,
+      "mae_flux_so_far": 0.2762869155674936,
+      "mae_plus_early_hxr": 0.27768087898776683,
+      "mae_current_goes_level": 0.46754113541071773,
+      "mae_reduction_dex": -0.0013939634202732587,
+      "ci95": [
+        -0.00882493040838076,
+        0.005747746910049563
+      ]
+    }
+  },
+  "becomes_M_or_X": {
+    "n_flares": 5322,
+    "n_test": 4257,
+    "n_test_positive": 690,
+    "auc": {
+      "flux so far (SoLEXS)": 0.78316106174555,
+      "+ onset hardness": 0.7783057658162789,
+      "+ GOES ratio at onset": 0.78316106174555,
+      "current GOES level (reference)": 0.8001330635495262
+    },
+    "auc_gain_vs_flux_so_far": {
+      "+ onset hardness": {
+        "gain": -0.004855295929271142,
+        "ci95": [
+          -0.010870483477656021,
+          0.000987377603231679
+        ]
+      },
+      "+ GOES ratio at onset": {
+        "gain": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ]
+      },
+      "current GOES level (reference)": {
+        "gain": 0.016972001803976178,
+        "ci95": [
+          0.0018483155698612477,
+          0.0294798301309788
+        ]
+      }
+    }
+  },
+  "example_2024_05_05_X1.2": {
+    "status": "ok",
+    "solexs_rise_coverage": 1.0,
+    "t_onset": 1714909380.0,
+    "detect_delay_s": 40.0,
+    "onset_minus_goes_start_s": 120.0,
+    "t_peak_solexs": 1714910060.0,
+    "t_impulsive": 1714909820.0,
+    "rise_min_goes": 13.0,
+    "onset_to_peak_min": 11.333333333333334,
+    "onset_to_impulsive_min": 7.333333333333333,
+    "hardness_background": 0.002924513631864436,
+    "hardness_onset": 0.27453667098732365,
+    "hardness_impulsive": 0.35852999351987985,
+    "hardness_peak": 0.2549624747362824,
+    "log_peak_flux": -3.9208187539523753,
+    "goes_ratio_onset": NaN,
+    "goes_ratio_peak": 0.3373252085317797,
+    "t_decision": 1714909420.0,
+    "dec_log_net_rate": 2.041984309796192,
+    "dec_log_background_rate": 2.5394776317416015,
+    "dec_rise_dex": 0.42257838920252133,
+    "dec_goes_log_flux": -5.117460228072203,
+    "peak_after_decision": true,
+    "hel1os": false,
+    "flare_id": 202405051141,
+    "goes_class": "X1.2",
+    "start_utc": "2024-05-05 11:41",
+    "peak_unix": 1714910040.0,
+    "start_unix": 1714909260.0,
+    "log_hardness_onset": -0.5613996368468867,
+    "log_hardness_background": -2.53394634994446
+  }
+}

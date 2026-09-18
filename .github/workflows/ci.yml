@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # CPU torch: CI has no GPU, and the science results are identical.
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -r requirements.txt -c constraints.txt
+          pip install ruff pyflakes
+
+      - name: Lint
+        run: |
+          python -m pyflakes solarflare tests
+          python -m ruff check solarflare tests
+
+      - name: Correctness tests (causality, leakage, masking, splits)
+        run: python -m tests.test_correctness
+
+      - name: Robustness tests (bad files, failure paths, full CLI)
+        run: python -m tests.test_robustness
+
+      - name: Scale tests (cache, stitching, archive splits, zip reading)
+        run: python -m tests.test_scale
+
+      - name: Extraction tests (corrupt zips, traversal, disk floor, HEL1OS layout)
+        run: python -m tests.test_extract
+
+      - name: HEL1OS tests (band alignment, zero counts, detector separation, versions)
+        run: python -m tests.test_hel1os
+
+      - name: Forward-test tests (frozen normaliser, cutoff, append-only, GOES truth)
+        run: python -m tests.test_forward
+
+      - name: GOES-label tests (flare summary reader, labels, targets, shared cache)
+        run: python -m tests.test_goes
+
+      - name: Physics tests (background, causal onset, Neupert lag, no leakage)
+        run: python -m tests.test_physics

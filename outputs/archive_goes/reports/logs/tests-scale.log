@@ -1,0 +1,52 @@
+Running 9 scale test groups
+
+test_bootstrap_is_fast_and_unchanged_at_archive_scale:
+  PASS  bootstrap interval identical to the direct implementation
+  PASS  3000 events x 60k samples bootstraps in under 20 s
+
+test_cache_is_incremental_and_invalidates_correctly:
+  PASS  first build caches every day
+  PASS  second build reuses every entry
+  PASS  ...without re-reading the data
+  PASS  a changed file (new mtime) rebuilds exactly that one entry
+  PASS  changing a raw-rate setting (grid) rebuilds everything
+  PASS  changing a derive-stage setting (background) rebuilds nothing
+
+test_chunked_percentile_is_exact:
+  PASS  chunked trailing percentile == single-chunk
+  PASS  chunked centred percentile == single-chunk
+
+test_flare_across_midnight_is_one_event:
+  PASS  stitched days form one continuous segment
+  PASS  the midnight flare is detected exactly once
+  PASS  ...and its decay continues past midnight
+  PASS  processing each day separately does NOT give the same answer (this is what stitching fixes)
+
+test_global_split_and_thinning:
+  PASS  auto split mode switches to global above the archive threshold
+  PASS  every validation window is after all training + embargo
+  PASS  every test window is after all validation + embargo
+  PASS  splits are disjoint
+  PASS  thinning keeps every flare-adjacent training window
+  PASS  thinning removes most quiet training windows
+
+test_index_deduplicates_versions_and_ignores_partial_downloads:
+  PASS  two versions of one day are indexed once
+  PASS  ...and the higher version wins
+  PASS  a .zip.part (download in progress) is never indexed
+
+test_phase_loss_ignores_windows_without_soft_truth:
+  PASS  masked phase loss equals the loss on truthful windows only
+
+test_prepare_end_to_end_archive_mode:
+  PASS  archive mode engages
+  PASS  stride raised to the archive stride
+  PASS  epoch cap applied
+  PASS  all five days detected their flare
+  PASS  meta records the split mode
+
+test_zip_reader_matches_directory_reader:
+  PASS  zip and extracted-directory reads are identical
+  PASS  zip detector listing ignores SDDs without spectra
+
+All scale checks passed.

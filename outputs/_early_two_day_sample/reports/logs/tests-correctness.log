@@ -1,0 +1,92 @@
+Running 20 test groups
+
+test_all_encoders_causal_and_shaped:
+  PASS  encoder 'tcn' shape and causality
+  PASS  encoder 'ssm' shape and causality
+  PASS  encoder 'gru' shape and causality
+  PASS  encoder 'transformer' shape and causality
+  PASS  encoder 'linear' shape and causality
+
+test_causal_conv_is_causal:
+  PASS  CausalConv1d does not see the future
+  PASS  CausalConv1d preserves sequence length
+
+test_coverage_is_row_level_not_per_channel:
+  PASS  coverage counts any-channel-valid rows
+  PASS  each channel still averages only its own valid samples
+
+test_feature_matrix_has_no_future_leakage:
+  PASS  no SoLEXS feature depends on future data
+
+test_forecast_targets_alignment:
+  PASS  forecast target at h=2 is x[t+2]
+  PASS  forecast target at h=5 is x[t+5]
+  PASS  targets running off the end are masked
+
+test_fully_masked_window_is_finite:
+  PASS  fully-masked window produces finite output (no NaN attention)
+
+test_hel1os_fill_detection:
+  PASS  fill rows identified as missing
+  PASS  masked mean is the true rate, not the diluted one
+  PASS  ...and the naive mean really is wrong
+
+test_interpolate_gaps_respects_max:
+  PASS  short gaps interpolated
+  PASS  long gaps left missing
+
+test_metrics:
+  PASS  contingency table
+  PASS  TSS value
+  PASS  perfect AUC
+  PASS  random AUC ~ 0.5
+  PASS  BSS of climatology forecast is 0
+
+test_modality_dropout_never_drops_both:
+  PASS  heavy modality dropout still yields finite outputs
+
+test_network_last_step_causality:
+  PASS  SqueezeExcite gate is causal (cumulative, not global, mean)
+
+test_occurrence_labels_look_forward_only:
+  PASS  occurrence label fires in the lead-up window
+  PASS  occurrence label is zero long before
+  PASS  occurrence label is zero after the event has passed
+
+test_quantiles_monotone:
+  PASS  forecast quantiles are non-crossing
+
+test_rebin_masks_missing:
+  PASS  sparse rebin recovers the true level, not the fill-diluted one
+  PASS  rebin reports coverage
+
+test_running_percentile_ignores_flare:
+  PASS  running percentile background is flare-robust
+  PASS  ...and a running mean would not have been
+
+test_selective_scan_matches_reference:
+  PASS  selective scan matches reference at T=7
+  PASS  selective scan matches reference at T=64
+  PASS  selective scan matches reference at T=65
+  PASS  selective scan matches reference at T=197
+
+test_split_is_chronological_with_embargo:
+  PASS  both segments appear in train
+  PASS  both segments appear in test
+  PASS  seg0: val starts after train + embargo
+  PASS  seg0: test starts after val + embargo
+  PASS  seg1: val starts after train + embargo
+  PASS  seg1: test starts after val + embargo
+  PASS  splits are disjoint
+
+test_ssm_encoder_is_causal:
+  PASS  SSM encoder is causal
+
+test_tcn_encoder_is_causal:
+  PASS  TCN encoder stack is causal
+
+test_trailing_percentile_is_causal:
+  PASS  trailing background ignores the future
+  PASS  ...whereas the centred version does not (hence two functions)
+
+All checks passed.

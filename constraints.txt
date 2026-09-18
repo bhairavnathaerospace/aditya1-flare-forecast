@@ -1,0 +1,16 @@
+# Versions this project was developed and verified against.
+# Generated from the working environment, not hand-written.
+# CI uses: pip install -r requirements.txt -c constraints.txt
+#
+# NOTE: torch is pinned WITHOUT a +cuXXX local version so the same
+# file works for CPU CI and GPU workstations; pick the build via the
+# PyTorch index URL (see requirements.txt).
+
+astropy==8.0.1
+h5py==3.16.0
+matplotlib==3.11.2
+numpy==2.5.3
+pandas==3.0.5
+scikit-learn==1.9.1
+scipy==1.18.1
+torch==2.14.0

@@ -1,0 +1,12 @@
+cache: 1167 sources, 1167 up to date, 0 to process with 3 worker(s)
+cache: 1167 ok, 0 empty, 0 failed (0s this run)
+
+Data: 796.2 observed days in 72 segment(s) [2024-02-01 -> 2026-09-13]
+  SoLEXS 760.5 d, HEL1OS 111.9 d, simultaneous 76.3 d; 7187 flares detected
+  archive mode (>= 30 days): stride_seconds 40.0 -> 120.0, max_batches_per_epoch 0 -> 400
+Windows: 563472  split=global: train 250088 (thinned from 338083) / val 112664 / test 112665
+
+frozen 'v2': weights sha256 a351b54d122bd0a0..., data cutoff 2026-09-13 23:59:20 UTC
+  thresholds (from validation): in-flare 0.332, occurrence [0.392, 0.44, 0.495]
+  normaliser: checkpoint
+  -> outputs\archive_goes\forward\v2

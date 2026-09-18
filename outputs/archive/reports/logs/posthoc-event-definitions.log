@@ -1,0 +1,24 @@
+modality ablation, HEL1OS-observed test windows:
+  both       n=51688  TSS 0.6960  AUC 0.9306
+  soft_only  n=51688  TSS 0.7145  AUC 0.9346
+  hard_only  n=51688  TSS 0.4586  AUC 0.7980
+  clock_only n=51688  TSS 0.0000  AUC 0.5000
+definition                               target   base    TSS        [95% CI] persist              gain [CI]    AUC AUCflux
+all detected (training labels)   in_progress_now  0.562  0.706 [0.690,0.721]   1.000 -0.294 [-0.310,-0.279]  0.931   0.832
+all detected (training labels)     within_15min  0.678  0.606 [0.589,0.623]   0.829 -0.223 [-0.236,-0.210]  0.882   0.809
+all detected (training labels)     within_30min  0.765  0.568 [0.547,0.591]   0.735 -0.166 [-0.180,-0.153]  0.861   0.805
+all detected (training labels)     within_60min  0.870  0.561 [0.534,0.589]   0.646 -0.085 [-0.103,-0.068]  0.853   0.816
+>= 3x background                 in_progress_now  0.443  0.624 [0.603,0.645]   1.000 -0.376 [-0.397,-0.355]  0.895   0.821
+>= 3x background                   within_15min  0.505  0.537 [0.516,0.554]   0.877 -0.341 [-0.361,-0.321]  0.846   0.788
+>= 3x background                   within_30min  0.560  0.488 [0.466,0.511]   0.791 -0.303 [-0.327,-0.282]  0.814   0.765
+>= 3x background                   within_60min  0.650  0.430 [0.405,0.456]   0.682 -0.252 [-0.277,-0.230]  0.779   0.740
+>= 10x background                in_progress_now  0.261  0.517 [0.489,0.546]   1.000 -0.483 [-0.511,-0.454]  0.835   0.818
+>= 10x background                  within_15min  0.289  0.437 [0.411,0.463]   0.905 -0.468 [-0.494,-0.439]  0.794   0.787
+>= 10x background                  within_30min  0.315  0.394 [0.369,0.419]   0.830 -0.436 [-0.462,-0.408]  0.767   0.764
+>= 10x background                  within_60min  0.362  0.348 [0.318,0.376]   0.721 -0.372 [-0.403,-0.344]  0.729   0.733
+>= 30x background                in_progress_now  0.153  0.461 [0.425,0.498]   1.000 -0.539 [-0.575,-0.502]  0.802   0.824
+>= 30x background                  within_15min  0.166  0.407 [0.370,0.438]   0.926 -0.519 [-0.556,-0.481]  0.771   0.799
+>= 30x background                  within_30min  0.178  0.363 [0.329,0.389]   0.863 -0.499 [-0.537,-0.463]  0.749   0.778
+>= 30x background                  within_60min  0.201  0.335 [0.298,0.367]   0.763 -0.428 [-0.468,-0.390]  0.719   0.749
+
+wrote outputs\archive\reports\event_definitions.json

@@ -1,0 +1,26 @@
+[13:27:07] tests-correctness  ...
+[13:27:14] tests-correctness  ok     7.7s  -> outputs\reports\logs\tests-correctness.log
+[13:27:14] tests-robustness   ...
+[13:27:26] tests-robustness   ok    11.7s  -> outputs\reports\logs\tests-robustness.log
+[13:27:26] inspect            ...
+[13:27:30] inspect            ok     4.1s  -> outputs\reports\logs\inspect.log
+[13:27:30] nowcast-train      ...
+[13:29:20] nowcast-train      ok   110.1s  -> outputs\reports\logs\nowcast-train.log
+[13:29:20] baselines          ...
+[13:29:41] baselines          ok    21.1s  -> outputs\reports\logs\baselines.log
+[13:29:41] forecast-cv        ...
+[13:30:13] forecast-cv        FAILED (exit 4294967295)    32.0s  -> outputs\reports\logs\forecast-cv.log
+[13:30:13] report             ...
+[13:30:14] report             ok     0.4s  -> outputs\reports\logs\report.log
+
+============================================================
+  tests-correctness  ok                     7.7s
+  tests-robustness   ok                    11.7s
+  inspect            ok                     4.1s
+  nowcast-train      ok                   110.1s
+  baselines          ok                    21.1s
+  forecast-cv        FAILED (exit 4294967295)    32.0s
+  report             ok                     0.4s
+  total                                   187.1s
+============================================================
+FAILED STAGES: forecast-cv

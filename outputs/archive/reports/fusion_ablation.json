@@ -1,0 +1,495 @@
+{
+  "encoder": "tcn",
+  "n_folds": 3,
+  "min_hard_coverage": 0.5,
+  "n_events_eligible": 871,
+  "n_paired_samples": 15661,
+  "peak_log_MAE_soft_hard": 0.8080582625335694,
+  "peak_log_MAE_soft_only": 0.8895485296795007,
+  "peak_MAE_reduction_from_hel1os": {
+    "value": 0.08149026714593133,
+    "ci_lo": -0.029791891842688364,
+    "ci_hi": 0.2433833243044977
+  },
+  "relative_reduction": 0.09160856819727621,
+  "events_improved_fraction": 0.43317972350230416,
+  "n_test_events": 651,
+  "exceeds_AUC_soft_hard": 0.7894554187765019,
+  "exceeds_AUC_soft_only": 0.8422643133541692,
+  "soft+hard": {
+    "n_events": 871,
+    "n_samples": 23257,
+    "threshold_rate": 83.0375,
+    "folds": [
+      {
+        "encoder": "tcn",
+        "fold": 0,
+        "n_train": 7094,
+        "n_test": 5185,
+        "peak_log_MAE": {
+          "value": 0.8655102849006653,
+          "ci_lo": 0.7071993470191955,
+          "ci_hi": 1.0505361378192901
+        },
+        "time_to_peak_MAE_min": {
+          "value": 43.39116287231445,
+          "ci_lo": 34.41925745010376,
+          "ci_hi": 53.464917182922356
+        },
+        "peak_log_MAE_current": 1.0532394647598267,
+        "peak_skill_vs_current": 0.1782397888992603,
+        "peak_log_MAE_climatology": 1.7014819383621216,
+        "peak_skill_vs_climatology": 0.49131973405852214,
+        "time_to_peak_MAE_min_climatology": 21.935997009277344,
+        "ttp_skill_vs_climatology": -0.9780802693382535,
+        "exceeds": {
+          "TSS": 0.4769197860962566,
+          "HSS": 0.4620788991015823,
+          "POD": 0.586096256684492,
+          "FAR": 0.45849802371541504,
+          "base_rate": 0.18032786885245902,
+          "AUC": 0.8095828877005348,
+          "AUC_ci_lo": 0.6683096072481162,
+          "AUC_ci_hi": 0.9044612090895129,
+          "positive_events": 24,
+          "negative_events": 193,
+          "AUC_current_level": 0.829169046870085,
+          "AUC_gain_vs_current": -0.0195861591695502
+        },
+        "lde": {
+          "TSS": 0.31688503937806245,
+          "HSS": 0.3296224823311531,
+          "POD": 0.8402495253593708,
+          "FAR": 0.20195775373518804,
+          "base_rate": 0.7110896817743491,
+          "AUC": 0.7713231601089673,
+          "AUC_ci_lo": 0.7068469255971963,
+          "AUC_ci_hi": 0.825834673318041,
+          "positive_events": 83,
+          "negative_events": 134,
+          "AUC_current_level": 0.654125580332587,
+          "AUC_gain_vs_current": 0.11719757977638023
+        },
+        "by_lead_time": {
+          "0-2min": {
+            "n": 433,
+            "peak_log_MAE": 0.8338736295700073
+          },
+          "2-5min": {
+            "n": 586,
+            "peak_log_MAE": 0.8144031763076782
+          },
+          "5-10min": {
+            "n": 756,
+            "peak_log_MAE": 0.7929812073707581
+          },
+          "10-infmin": {
+            "n": 3410,
+            "peak_log_MAE": 0.8943899273872375
+          }
+        },
+        "seconds": 350.2
+      },
+      {
+        "encoder": "tcn",
+        "fold": 1,
+        "n_train": 11805,
+        "n_test": 6608,
+        "peak_log_MAE": {
+          "value": 0.7990038394927979,
+          "ci_lo": 0.6060914605855942,
+          "ci_hi": 0.9709019035100936
+        },
+        "time_to_peak_MAE_min": {
+          "value": 153.91397094726562,
+          "ci_lo": 27.77524790763855,
+          "ci_hi": 310.6619850158691
+        },
+        "peak_log_MAE_current": 1.2406895160675049,
+        "peak_skill_vs_current": 0.35600016833758374,
+        "peak_log_MAE_climatology": 1.4815118312835693,
+        "peak_skill_vs_climatology": 0.46068345684384604,
+        "time_to_peak_MAE_min_climatology": 134.08456420898438,
+        "ttp_skill_vs_climatology": -0.14788731913522213,
+        "exceeds": {
+          "TSS": 0.5805373405147752,
+          "HSS": 0.6267944462216382,
+          "POD": 0.618334067871309,
+          "FAR": 0.10465858328015316,
+          "base_rate": 0.34337167070217917,
+          "AUC": 0.8827645903466982,
+          "AUC_ci_lo": 0.7256130908220073,
+          "AUC_ci_hi": 0.9512280896947362,
+          "positive_events": 18,
+          "negative_events": 199,
+          "AUC_current_level": 0.9034267593183312,
+          "AUC_gain_vs_current": -0.020662168971632977
+        },
+        "lde": {
+          "TSS": 0.5539911171640252,
+          "HSS": 0.500302480338778,
+          "POD": 0.8183807439824945,
+          "FAR": 0.09223300970873786,
+          "base_rate": 0.7607445520581114,
+          "AUC": 0.8694407567887361,
+          "AUC_ci_lo": 0.7897977935976278,
+          "AUC_ci_hi": 0.9188293394241909,
+          "positive_events": 63,
+          "negative_events": 154,
+          "AUC_current_level": 0.7338123657864232,
+          "AUC_gain_vs_current": 0.13562839100231294
+        },
+        "by_lead_time": {
+          "0-2min": {
+            "n": 430,
+            "peak_log_MAE": 0.6993523240089417
+          },
+          "2-5min": {
+            "n": 548,
+            "peak_log_MAE": 0.6957875490188599
+          },
+          "5-10min": {
+            "n": 655,
+            "peak_log_MAE": 0.7169050574302673
+          },
+          "10-infmin": {
+            "n": 4975,
+            "peak_log_MAE": 0.829795241355896
+          }
+        },
+        "seconds": 983.0
+      },
+      {
+        "encoder": "tcn",
+        "fold": 2,
+        "n_train": 16305,
+        "n_test": 3868,
+        "peak_log_MAE": {
+          "value": 0.7465130686759949,
+          "ci_lo": 0.5836941778659821,
+          "ci_hi": 0.9257485806941981
+        },
+        "time_to_peak_MAE_min": {
+          "value": 17.51419448852539,
+          "ci_lo": 15.23567898273468,
+          "ci_hi": 20.05249876976013
+        },
+        "peak_log_MAE_current": 0.8923745155334473,
+        "peak_skill_vs_current": 0.16345317388435143,
+        "peak_log_MAE_climatology": 1.5318660736083984,
+        "peak_skill_vs_climatology": 0.5126773276481407,
+        "time_to_peak_MAE_min_climatology": 15.713226318359375,
+        "ttp_skill_vs_climatology": -0.114614792257002,
+        "exceeds": {
+          "TSS": 0.2780704804548945,
+          "HSS": 0.31796691406710176,
+          "POD": 0.32634032634032634,
+          "FAR": 0.5424836601307189,
+          "base_rate": 0.1109100310237849,
+          "AUC": 0.8046065594771614,
+          "AUC_ci_lo": 0.709834683017601,
+          "AUC_ci_hi": 0.93399298738629,
+          "positive_events": 19,
+          "negative_events": 198,
+          "AUC_current_level": 0.7908909932754074,
+          "AUC_gain_vs_current": 0.01371556620175407
+        },
+        "lde": {
+          "TSS": 0.2113283521990068,
+          "HSS": 0.227033021644956,
+          "POD": 0.9403606102635229,
+          "FAR": 0.3793103448275862,
+          "base_rate": 0.5592037228541882,
+          "AUC": 0.8448068895297207,
+          "AUC_ci_lo": 0.8061020732840856,
+          "AUC_ci_hi": 0.876398225107597,
+          "positive_events": 60,
+          "negative_events": 157,
+          "AUC_current_level": 0.7497777199311806,
+          "AUC_gain_vs_current": 0.09502916959854013
+        },
+        "by_lead_time": {
+          "0-2min": {
+            "n": 433,
+            "peak_log_MAE": 0.7286847829818726
+          },
+          "2-5min": {
+            "n": 575,
+            "peak_log_MAE": 0.6722641587257385
+          },
+          "5-10min": {
+            "n": 691,
+            "peak_log_MAE": 0.6563659906387329
+          },
+          "10-infmin": {
+            "n": 2169,
+            "peak_log_MAE": 0.7984744906425476
+          }
+        },
+        "seconds": 757.9
+      }
+    ],
+    "summary": {
+      "tcn": {
+        "n_folds": 3,
+        "peak_log_MAE_mean": 0.8036757310231527,
+        "peak_log_MAE_std": 0.04869260241664909,
+        "peak_log_MAE_current_mean": 1.062101165453593,
+        "peak_log_MAE_climatology_mean": 1.571619947751363,
+        "peak_skill_vs_current_mean": 0.23256437704039848,
+        "peak_skill_vs_climatology_mean": 0.48822683951683626,
+        "time_to_peak_MAE_min_mean": 71.60644276936848,
+        "ttp_skill_vs_climatology_mean": -0.4135274602434926,
+        "exceeds_AUC_mean": 0.8323180125081314,
+        "exceeds_folds_with_both_classes": 3,
+        "exceeds_positive_events_total": 61,
+        "exceeds_AUC_current_level_mean": 0.8411622664879411,
+        "exceeds_AUC_gain_vs_current_mean": -0.008844253979809702,
+        "lde_folds_with_both_classes": 3,
+        "lde_positive_events_total": 206,
+        "lde_AUC_current_level_mean": 0.712571888683397,
+        "lde_AUC_gain_vs_current_mean": 0.11595171345907777,
+        "total_seconds": 2091.1
+      }
+    },
+    "failures": []
+  },
+  "soft-only": {
+    "n_events": 871,
+    "n_samples": 23257,
+    "threshold_rate": 83.0375,
+    "folds": [
+      {
+        "encoder": "tcn",
+        "fold": 0,
+        "n_train": 7094,
+        "n_test": 5185,
+        "peak_log_MAE": {
+          "value": 0.8500828742980957,
+          "ci_lo": 0.674115739762783,
+          "ci_hi": 1.041172310709953
+        },
+        "time_to_peak_MAE_min": {
+          "value": 28.751636505126953,
+          "ci_lo": 23.655537939071657,
+          "ci_hi": 34.534645652771
+        },
+        "peak_log_MAE_current": 1.0532394647598267,
+        "peak_skill_vs_current": 0.19288737011773227,
+        "peak_log_MAE_climatology": 1.7014819383621216,
+        "peak_skill_vs_climatology": 0.5003867774721127,
+        "time_to_peak_MAE_min_climatology": 21.935997009277344,
+        "ttp_skill_vs_climatology": -0.31070570865628255,
+        "exceeds": {
+          "TSS": 0.4394652406417112,
+          "HSS": 0.5264169314338424,
+          "POD": 0.4641711229946524,
+          "FAR": 0.19480519480519481,
+          "base_rate": 0.18032786885245902,
+          "AUC": 0.8204454230890217,
+          "AUC_ci_lo": 0.6871016677620212,
+          "AUC_ci_hi": 0.9235397430246822,
+          "positive_events": 24,
+          "negative_events": 193,
+          "AUC_current_level": 0.829169046870085,
+          "AUC_gain_vs_current": -0.008723623781063283
+        },
+        "lde": {
+          "TSS": 0.21629671312948506,
+          "HSS": 0.242809000262497,
+          "POD": 0.8798481149986439,
+          "FAR": 0.2345445965077867,
+          "base_rate": 0.7110896817743491,
+          "AUC": 0.7783431882596921,
+          "AUC_ci_lo": 0.7164024477305805,
+          "AUC_ci_hi": 0.8312495927743964,
+          "positive_events": 83,
+          "negative_events": 134,
+          "AUC_current_level": 0.654125580332587,
+          "AUC_gain_vs_current": 0.12421760792710501
+        },
+        "by_lead_time": {
+          "0-2min": {
+            "n": 433,
+            "peak_log_MAE": 0.8243799805641174
+          },
+          "2-5min": {
+            "n": 586,
+            "peak_log_MAE": 0.7880594730377197
+          },
+          "5-10min": {
+            "n": 756,
+            "peak_log_MAE": 0.7594791054725647
+          },
+          "10-infmin": {
+            "n": 3410,
+            "peak_log_MAE": 0.8840919733047485
+          }
+        },
+        "seconds": 900.8
+      },
+      {
+        "encoder": "tcn",
+        "fold": 1,
+        "n_train": 11805,
+        "n_test": 6608,
+        "peak_log_MAE": {
+          "value": 1.0009855031967163,
+          "ci_lo": 0.6167992889881134,
+          "ci_hi": 1.4103266328573227
+        },
+        "time_to_peak_MAE_min": {
+          "value": 127.39628601074219,
+          "ci_lo": 27.357772159576417,
+          "ci_hi": 251.39115447998046
+        },
+        "peak_log_MAE_current": 1.2406895160675049,
+        "peak_skill_vs_current": 0.1932022554930225,
+        "peak_log_MAE_climatology": 1.4815118312835693,
+        "peak_skill_vs_climatology": 0.3243486268148996,
+        "time_to_peak_MAE_min_climatology": 134.08456420898438,
+        "ttp_skill_vs_climatology": 0.049881045127743606,
+        "exceeds": {
+          "TSS": 0.5995125945245755,
+          "HSS": 0.6492714073188837,
+          "POD": 0.626707800793301,
+          "FAR": 0.07662337662337662,
+          "base_rate": 0.34337167070217917,
+          "AUC": 0.9177197781129893,
+          "AUC_ci_lo": 0.8063538353356099,
+          "AUC_ci_hi": 0.9636324124644068,
+          "positive_events": 18,
+          "negative_events": 199,
+          "AUC_current_level": 0.9034267593183312,
+          "AUC_gain_vs_current": 0.014293018794658163
+        },
+        "lde": {
+          "TSS": 0.689836929914326,
+          "HSS": 0.6186229774558256,
+          "POD": 0.8454346528744778,
+          "FAR": 0.0547153024911032,
+          "base_rate": 0.7607445520581114,
+          "AUC": 0.9121655143188201,
+          "AUC_ci_lo": 0.8607105843282531,
+          "AUC_ci_hi": 0.9454088476487091,
+          "positive_events": 63,
+          "negative_events": 154,
+          "AUC_current_level": 0.7338123657864232,
+          "AUC_gain_vs_current": 0.17835314853239692
+        },
+        "by_lead_time": {
+          "0-2min": {
+            "n": 430,
+            "peak_log_MAE": 0.7028550505638123
+          },
+          "2-5min": {
+            "n": 548,
+            "peak_log_MAE": 0.6945450901985168
+          },
+          "5-10min": {
+            "n": 655,
+            "peak_log_MAE": 0.7234021425247192
+          },
+          "10-infmin": {
+            "n": 4975,
+            "peak_log_MAE": 1.097054362297058
+          }
+        },
+        "seconds": 622.7
+      },
+      {
+        "encoder": "tcn",
+        "fold": 2,
+        "n_train": 16305,
+        "n_test": 3868,
+        "peak_log_MAE": {
+          "value": 0.7520755529403687,
+          "ci_lo": 0.5711384087800979,
+          "ci_hi": 0.9529665753245352
+        },
+        "time_to_peak_MAE_min": {
+          "value": 17.07321548461914,
+          "ci_lo": 14.688023138046265,
+          "ci_hi": 19.563405990600586
+        },
+        "peak_log_MAE_current": 0.8923745155334473,
+        "peak_skill_vs_current": 0.15721982211606544,
+        "peak_log_MAE_climatology": 1.5318660736083984,
+        "peak_skill_vs_climatology": 0.5090461458103765,
+        "time_to_peak_MAE_min_climatology": 15.713226318359375,
+        "ttp_skill_vs_climatology": -0.08655060002990922,
+        "exceeds": {
+          "TSS": 0.24630404973527975,
+          "HSS": 0.2904516556016134,
+          "POD": 0.2913752913752914,
+          "FAR": 0.5535714285714286,
+          "base_rate": 0.1109100310237849,
+          "AUC": 0.8084497648324342,
+          "AUC_ci_lo": 0.7125015330986915,
+          "AUC_ci_hi": 0.9267146145514895,
+          "positive_events": 19,
+          "negative_events": 198,
+          "AUC_current_level": 0.7908909932754074,
+          "AUC_gain_vs_current": 0.017558771557026898
+        },
+        "lde": {
+          "TSS": 0.29688265591804586,
+          "HSS": 0.3150155137252735,
+          "POD": 0.9297272306981045,
+          "FAR": 0.3491909385113269,
+          "base_rate": 0.5592037228541882,
+          "AUC": 0.8547344502245849,
+          "AUC_ci_lo": 0.8177985140332626,
+          "AUC_ci_hi": 0.8852681448855773,
+          "positive_events": 60,
+          "negative_events": 157,
+          "AUC_current_level": 0.7497777199311806,
+          "AUC_gain_vs_current": 0.10495673029340435
+        },
+        "by_lead_time": {
+          "0-2min": {
+            "n": 433,
+            "peak_log_MAE": 0.7373720407485962
+          },
+          "2-5min": {
+            "n": 575,
+            "peak_log_MAE": 0.6682564616203308
+          },
+          "5-10min": {
+            "n": 691,
+            "peak_log_MAE": 0.6421061158180237
+          },
+          "10-infmin": {
+            "n": 2169,
+            "peak_log_MAE": 0.8122652173042297
+          }
+        },
+        "seconds": 716.4
+      }
+    ],
+    "summary": {
+      "tcn": {
+        "n_folds": 3,
+        "peak_log_MAE_mean": 0.8677146434783936,
+        "peak_log_MAE_std": 0.1023790352805848,
+        "peak_log_MAE_current_mean": 1.062101165453593,
+        "peak_log_MAE_climatology_mean": 1.571619947751363,
+        "peak_skill_vs_current_mean": 0.18110314924227341,
+        "peak_skill_vs_climatology_mean": 0.44459385003246293,
+        "time_to_peak_MAE_min_mean": 57.740379333496094,
+        "ttp_skill_vs_climatology_mean": -0.11579175451948272,
+        "exceeds_AUC_mean": 0.8488716553448151,
+        "exceeds_folds_with_both_classes": 3,
+        "exceeds_positive_events_total": 61,
+        "exceeds_AUC_current_level_mean": 0.8411622664879411,
+        "exceeds_AUC_gain_vs_current_mean": 0.007709388856873926,
+        "lde_folds_with_both_classes": 3,
+        "lde_positive_events_total": 206,
+        "lde_AUC_current_level_mean": 0.712571888683397,
+        "lde_AUC_gain_vs_current_mean": 0.1358424955843021,
+        "total_seconds": 2239.9
+      }
+    },
+    "failures": []
+  }
+}

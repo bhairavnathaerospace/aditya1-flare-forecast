@@ -1,0 +1,17 @@
+[16:43:14] run_all (baselines, forecast-cv, fusion, report) ...
+[21:33:36] run_all (baselines, forecast-cv, fusion, report) exit=0 (17422s)
+[21:33:36] re-evaluate best.pt with the persistence fix ...
+[22:02:40] re-evaluate best.pt with the persistence fix exit=0 (1744s)
+Traceback (most recent call last):
+  File "D:\Deep Learning algorithm for Forecasting and Nowcasting Solar Flares using combined Soft and Hard X-ray data from Aditya-L1 (SoLEXS + HEL1OS)\outputs\archive_goes\resume_chain.py", line 50, in <module>
+    new, old = json.loads(ev.read_text("utf-8")), json.loads(before.read_text("utf-8"))
+                                                  ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\pawar\AppData\Local\Programs\Python\Python314\Lib\json\__init__.py", line 352, in loads
+    return _default_decoder.decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "C:\Users\pawar\AppData\Local\Programs\Python\Python314\Lib\json\decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\pawar\AppData\Local\Programs\Python\Python314\Lib\json\decoder.py", line 363, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)

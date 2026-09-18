@@ -1,0 +1,25 @@
+[16:43:14] forecast-cv        ...
+[21:01:48] forecast-cv        ok  15514.6s  -> D:\Deep Learning algorithm for Forecasting and Nowcasting Solar Flares using combined Soft and Hard X-ray data from Aditya-L1 (SoLEXS + HEL1OS)\outputs\archive_goes\reports\logs\forecast-cv.log
+[21:01:48] fusion             ...
+[21:33:35] fusion             ok  1907.0s  -> D:\Deep Learning algorithm for Forecasting and Nowcasting Solar Flares using combined Soft and Hard X-ray data from Aditya-L1 (SoLEXS + HEL1OS)\outputs\archive_goes\reports\logs\fusion.log
+[21:33:35] report             ...
+[21:33:36] report             ok     0.5s  -> D:\Deep Learning algorithm for Forecasting and Nowcasting Solar Flares using combined Soft and Hard X-ray data from Aditya-L1 (SoLEXS + HEL1OS)\outputs\archive_goes\reports\logs\report.log
+
+============================================================
+  tests-correctness  skipped                0.0s
+  tests-robustness   skipped                0.0s
+  tests-scale        skipped                0.0s
+  tests-extract      skipped                0.0s
+  tests-hel1os       skipped                0.0s
+  tests-forward      skipped                0.0s
+  tests-goes         skipped                0.0s
+  cache              skipped                0.0s
+  inspect            skipped                0.0s
+  nowcast-train      skipped                0.0s
+  baselines          skipped                0.0s
+  forecast-cv        ok                 15514.6s
+  fusion             ok                  1907.0s
+  report             ok                     0.5s
+  total                                 17422.1s
+============================================================
+ALL STAGES OK

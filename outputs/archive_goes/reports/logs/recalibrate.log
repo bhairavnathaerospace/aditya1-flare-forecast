@@ -1,0 +1,7 @@
+      in_flare  base 0.083 | raw: Brier 0.0558 BSS +0.266 mean p 0.225 TSS 0.768  ->  calibrated: Brier 0.0309 BSS +0.594 mean p 0.083 TSS 0.768
+  within_15min  base 0.141 | raw: Brier 0.1266 BSS -0.045 mean p 0.340 TSS 0.466  ->  calibrated: Brier 0.0798 BSS +0.341 mean p 0.141 TSS 0.465
+  within_30min  base 0.193 | raw: Brier 0.1644 BSS -0.055 mean p 0.391 TSS 0.348  ->  calibrated: Brier 0.1181 BSS +0.242 mean p 0.195 TSS 0.350
+  within_60min  base 0.282 | raw: Brier 0.2069 BSS -0.023 mean p 0.459 TSS 0.255  ->  calibrated: Brier 0.1694 BSS +0.163 mean p 0.286 TSS 0.255
+
+wrote outputs\archive_goes\reports\calibration.json
+Isotonic regression is monotone, so AUC is unchanged by construction; what changes is whether the numbers can be read as probabilities.

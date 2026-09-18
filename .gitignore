@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+outputs/checkpoints/*.pt
+outputs/reports/*.log
+
+# Download tooling and raw mission data -- never commit.
+# bulk-download.js held account credentials in plain text.
+bulk-download.js
+node_modules/
+al1_downloads/
+data/
+AL1_SLX_*/
+HLS_*/
+.env

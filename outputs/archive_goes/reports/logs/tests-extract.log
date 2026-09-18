@@ -1,0 +1,22 @@
+  PASS  good zips extracted with their internal folder
+  PASS  extracted bytes identical to the zip member
+  PASS  markers written
+  PASS  corrupt zip reported as failed, not extracted
+  PASS  path traversal rejected and nothing written outside dest
+  PASS  .zip.part ignored
+  PASS  no temporary folders left behind
+  PASS  non-zero exit when something failed
+  PASS  second run skips completed zips
+  PASS  a zip re-downloaded with identical content is NOT re-extracted
+  PASS  a zip whose content changed IS re-extracted, with the new bytes
+  PASS  disk guard stops extraction instead of filling the disk
+  PASS  HEL1OS: all three products survive in the shared date tree
+  PASS  HEL1OS: event lists extracted when --members all
+  PASS  HEL1OS: re-extracting one product does not delete its neighbours
+  PASS  HEL1OS default (lightcurves) skips event lists
+  PASS  multi-product zip: each product lands in its own folder beside the neighbour
+  PASS  multi-product zip: every product folder gets a completion marker
+  PASS  no marker is written on the shared day folder
+  PASS  re-extracting the multi-product zip leaves the neighbour's data intact
+  PASS  a product shipped in two zips is not re-extracted on every run
+All extraction checks passed.

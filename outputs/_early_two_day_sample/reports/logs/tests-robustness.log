@@ -1,0 +1,92 @@
+Running 12 robustness test groups
+
+test_config_roundtrip:
+  PASS  config serialises to JSON
+  PASS  ...including the clock flag that caused the leakage bug
+
+test_discover_on_empty_tree:
+  PASS  discover on an empty directory returns empty inventory
+  PASS  ...and its summary renders without error
+
+test_empty_gti_is_zero_rows_not_error:
+  PASS  zero-row GTI returns an empty (0,2) array
+
+test_full_pipeline_on_synthetic_data:
+  PASS  pipeline builds windows from synthetic data
+  PASS  training completes
+  PASS  evaluation produces a report
+  PASS  ablation includes the clock_only guard
+wrote 6 predictions to C:\Users\pawar\AppData\Local\Temp\tmp21ntu1si\out\pred.csv
+  PASS  predict runs and writes rows
+  PASS  predict blanks the peak head outside flares
+  PASS  RESULTS.md renders
+
+test_gru_encoder_exits_cleanly_on_cuda:
+  PASS  GRU encoder on CUDA exits with code 0 (no cuDNN teardown crash)
+
+test_hel1os_all_fill_rows:
+  PASS  near-empty HEL1OS file still parses
+C:\Users\pawar\AppData\Local\Programs\Python\Python314\Lib\site-packages\numpy\lib\_nanfunctions_impl.py:1593: RuntimeWarning: All-NaN slice encountered
+  return fnb._ureduce(a,
+  PASS  ...and produces finite features
+
+test_hel1os_missing_hk_and_gti:
+  PASS  HEL1OS reads with no GTI file
+  PASS  absent hk.fits returns None, not an exception
+
+test_plot_save_failure_does_not_propagate:
+  WARNING: could not write fig.png ([WinError 183] Cannot create a file when that file already exists: 'C:\\Users\\pawar\\AppData\\Local\\Temp\\tmp0yovf1p8\\notadir'); continuing without it
+  PASS  a failed figure write returns None instead of raising
+
+test_rise_forecasting_on_synthetic_flares:
+  PASS  synthetic flares are detected
+  PASS  rise dataset is built from the events
+  PASS  current level rarely exceeds the eventual (smoothed) peak
+  PASS  time to peak is non-negative during the rise
+  PASS  climatology is weighted per event, not per sample
+  PASS  grouped CV completes
+  PASS  every encoder produced results
+  PASS  no fold failed
+  PASS  folds never share an event between train and test
+  PASS  every fold reports both reference forecasts
+  PASS  reference MAEs are finite
+
+==========================================================================
+RISE-PHASE FORECASTING - grouped rolling-origin CV over events
+==========================================================================
+6 events, 53 rise samples, large-flare threshold 78.88 cts/s
+
+     encoder  folds       peak logMAE  skill/cur  skill/clim  ttp min  ttp skill  exc AUC    sec
+         tcn      2   2.7424 +/-0.3706     -3.245      -5.403      2.7     -0.275    0.301      1
+         gru      2   2.7597 +/-0.2619     -3.281      -5.465      5.7     -1.581    0.770      1
+ transformer      2   2.9297 +/-0.5306     -3.524      -5.815      4.5     -1.069    0.806      0
+      linear      2   2.9819 +/-0.0423     -3.645      -6.032      4.3     -0.979    0.301      0
+         ssm      2   3.0837 +/-0.5040     -3.766      -6.183      3.8     -0.759    0.589      1
+
+reference MAE: current level 0.6432, training climatology 0.4264
+skill > 0 beats that reference; skill <= 0 means the model adds nothing over it.
+
+exceedance AUC rests on 2 fold(s) with both classes and 2 positive event(s) in total; current flux alone scores AUC 0.809.
+  -> too few large flares for this AUC to mean anything yet.
+
+Spread across folds is the number that matters: with a handful of
+events, a mean without its fold-to-fold scatter is not a result.
+  PASS  report renders the forecasting comparison
+
+test_solexs_absent_detector_returns_none:
+  PASS  SoLEXS returns None for a detector with no science data
+
+test_solexs_missing_optional_products:
+  PASS  SoLEXS reads with no .lc and no .gti
+  PASS  ...and reports no GTI coverage rather than crashing
+  PASS  ...and lc cross-check reports 'not checked'
+
+test_truncated_fits_is_reported_not_silent:
+WARNING: VerifyWarning: Found a SIMPLE card but its format doesn't respect the FITS Standard [astropy.io.fits.hdu.hdulist]
+WARNING: Header block contains null bytes instead of spaces for padding, and is not FITS-compliant. Nulls may be replaced with spaces upon writing. [astropy.io.fits.header]
+WARNING: VerifyWarning: Error validating header for HDU #0 (note: Astropy uses zero-based indexing).
+    Header size is not multiple of 2880: 212
+There may be extra bytes after the last HDU or the file is corrupted. [astropy.io.fits.hdu.hdulist]
+  PASS  a truncated .pi raises rather than returning junk
+
+All robustness checks passed.

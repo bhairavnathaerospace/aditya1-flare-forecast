@@ -1,0 +1,23 @@
+# Tested on Python 3.14 / Windows with an RTX 3050 (CUDA 13).
+#
+# IMPORTANT: plain `pip install torch` on Windows gives the CPU-only build, and
+# this model runs ~20x slower on CPU than on even a modest laptop GPU. Install
+# the CUDA wheel explicitly and match it to your driver:
+#
+#   nvidia-smi                       # confirm a GPU and read the driver version
+#   pip install torch --index-url https://download.pytorch.org/whl/cu130
+#
+# Use cu126 for older drivers. Verify with:
+#   python -c "import torch; print(torch.cuda.is_available())"
+#
+# No GPU? The CPU build works and produces identical numbers, just slowly:
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+numpy>=2.0
+scipy>=1.13
+astropy>=6.0
+pandas>=2.2
+matplotlib>=3.8
+torch>=2.4
+scikit-learn>=1.4
+# GOES-R XRS netCDF-4 files (flare list and 1-minute flux) for GOES-labelled training
+h5py>=3.10

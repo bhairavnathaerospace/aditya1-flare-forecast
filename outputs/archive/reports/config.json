@@ -1,0 +1,94 @@
+{
+  "data_root": "D:\\Data",
+  "out_dir": "outputs\\archive",
+  "cache_dir": null,
+  "pre": {
+    "dt_seconds": 20.0,
+    "background_window_s": 21600.0,
+    "background_percentile": 10.0,
+    "min_valid_fraction": 0.2,
+    "flare_rise_factor": 1.4,
+    "flare_rise_sigma": 4.0,
+    "flare_min_rise_s": 120.0,
+    "flare_end_fraction": 0.5,
+    "flare_min_duration_s": 300.0,
+    "flare_merge_gap_s": 300.0,
+    "smooth_s": 60.0,
+    "max_stitch_gap_s": 21600.0,
+    "cache_workers": 3
+  },
+  "win": {
+    "input_seconds": 7200.0,
+    "stride_seconds": 40.0,
+    "forecast_horizons_s": [
+      60.0,
+      300.0,
+      900.0,
+      1800.0,
+      3600.0
+    ],
+    "quantiles": [
+      0.1,
+      0.5,
+      0.9
+    ],
+    "occurrence_horizons_s": [
+      900.0,
+      1800.0,
+      3600.0
+    ],
+    "min_observed_fraction": 0.5,
+    "large_data_days": 30.0,
+    "large_stride_seconds": 120.0,
+    "quiet_train_stride_seconds": 600.0
+  },
+  "model": {
+    "hidden": 64,
+    "dilations": [
+      1,
+      2,
+      4,
+      8,
+      16,
+      32,
+      64,
+      128
+    ],
+    "kernel_size": 3,
+    "dropout": 0.1,
+    "modality_dropout": 0.25,
+    "attn_heads": 4,
+    "n_phase_classes": 4,
+    "ssm_layers": 4,
+    "ssm_state": 8,
+    "rnn_layers": 2,
+    "tf_layers": 3,
+    "use_clock": false
+  },
+  "train": {
+    "epochs": 60,
+    "batch_size": 64,
+    "lr": 0.002,
+    "weight_decay": 0.0001,
+    "warmup_frac": 0.05,
+    "grad_clip": 1.0,
+    "seed": 1337,
+    "device": "auto",
+    "torch_threads": 0,
+    "split": [
+      0.6,
+      0.2,
+      0.2
+    ],
+    "embargo_s": 3600.0,
+    "early_stop_patience": 12,
+    "split_mode": "auto",
+    "max_batches_per_epoch": 0,
+    "large_max_batches_per_epoch": 400,
+    "focal_gamma": 2.0,
+    "w_phase": 1.0,
+    "w_occurrence": 1.0,
+    "w_nowcast": 1.0,
+    "w_forecast": 1.0
+  }
+}

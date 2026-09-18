@@ -1,0 +1,77 @@
+SoLEXS observations:
+  SDD2 20260910  n=86400  valid=86376  (100.0%)
+HEL1OS observations:
+  CZT1 2026-09-11T12:00:03 -> 2026-09-11T23:59:58  n=43188  sampled=17.2%  bands=5
+
+Segments: 2  windows: 2702  (train 1620 / val 360 / test 362)
+  solexs_SDD2_20260910: 4320 steps, soft 100% hard 0%, 13 events
+  hel1os_CZT1_2026-09-11: 2160 steps, soft 0% hard 100%, 0 events
+
+wrote 3 data figures to outputs\figures
+
+device=cuda  params=461,311  receptive field=541 steps (window 360)
+train batches=26  val batches=6  test batches=6
+ep   0 | loss 1.4167 | now 0.065 fore 0.078 occ 0.160 | vTSS 0.786 vTSSocc 0.519 vMAE 0.828 | score 0.6110  *
+ep   1 | loss 0.9123 | now 0.016 fore 0.061 occ 0.137 | vTSS 0.849 vTSSocc 0.698 vMAE 0.838 | score 0.7317  *
+ep   2 | loss 0.7608 | now 0.016 fore 0.055 occ 0.130 | vTSS 0.792 vTSSocc 0.665 vMAE 0.807 | score 0.6883
+ep   3 | loss 0.5924 | now 0.021 fore 0.053 occ 0.120 | vTSS 0.746 vTSSocc 0.697 vMAE 0.765 | score 0.6829
+ep   4 | loss 0.3188 | now 0.012 fore 0.051 occ 0.108 | vTSS 0.776 vTSSocc 0.698 vMAE 0.748 | score 0.6994
+ep   5 | loss 0.1842 | now 0.013 fore 0.049 occ 0.104 | vTSS 0.705 vTSSocc 0.634 vMAE 0.791 | score 0.6297
+ep   6 | loss -0.0395 | now 0.013 fore 0.048 occ 0.093 | vTSS 0.524 vTSSocc 0.251 vMAE 0.776 | score 0.3487
+ep   7 | loss -0.1256 | now 0.012 fore 0.046 occ 0.097 | vTSS 0.597 vTSSocc 0.574 vMAE 0.827 | score 0.5444
+ep   8 | loss -0.3502 | now 0.011 fore 0.046 occ 0.078 | vTSS 0.632 vTSSocc 0.654 vMAE 0.784 | score 0.6040
+ep   9 | loss -0.5433 | now 0.011 fore 0.045 occ 0.066 | vTSS 0.483 vTSSocc 0.574 vMAE 0.771 | score 0.4901
+ep  10 | loss -0.5872 | now 0.010 fore 0.045 occ 0.068 | vTSS 0.668 vTSSocc 0.608 vMAE 0.803 | score 0.5980
+ep  11 | loss -0.7287 | now 0.010 fore 0.044 occ 0.061 | vTSS 0.642 vTSSocc 0.719 vMAE 0.805 | score 0.6407
+ep  12 | loss -0.8393 | now 0.010 fore 0.042 occ 0.059 | vTSS 0.617 vTSSocc 0.569 vMAE 0.805 | score 0.5526
+ep  13 | loss -0.9109 | now 0.010 fore 0.043 occ 0.051 | vTSS 0.581 vTSSocc 0.579 vMAE 0.826 | score 0.5390
+early stop at epoch 13 (best 1)
+
+trained 14 epochs in 120.3s; best epoch 1 score 0.7317
+checkpoint: outputs\checkpoints\best.pt
+
+==========================================================================
+TEST-SET EVALUATION
+==========================================================================
+
+[1] Nowcast: flare in progress   (threshold 0.50 fitted on validation)
+    base rate 0.311   TSS 0.244   HSS 0.308   AUC 0.7396
+    POD 0.244  FAR 0.000  CSI 0.244  F1 0.393
+    Brier 0.1717   BSS vs climatology 0.1995
+    TP 22.0 FP 0.0 FN 68.0 TN 199.0
+
+[2] Nowcast: flare phase   accuracy 0.751   macro-F1 0.386
+    quiet  P 0.802 R 0.980 F1 0.882  n=199
+    rise   P 0.000 R 0.000 F1 0.000  n=9
+    peak   P 0.217 R 0.263 F1 0.238  n=19
+    decay  P 0.944 R 0.274 F1 0.425  n=62
+
+[3] Forecast: flare within horizon
+     horizon    base     TSS     HSS     POD     FAR     AUC      BSS
+       15min   0.547   0.082   0.075   0.082   0.000   0.438   -0.184
+       30min   0.754   0.064   0.033   0.064   0.000   0.360   -0.975
+       60min   0.972   0.146   0.009   0.146   0.000   0.211  -12.171
+
+[4] Nowcast regression (log flux)   MAE 0.1559  RMSE 0.2287  R2 0.5362
+
+[5] Forecast regression (log flux), median quantile
+     horizon     RMSE  persist     clim  vs_pers  vs_clim    corr   cover
+        1min   0.2525   0.1732   0.3378   -0.457    0.253   0.822   0.879
+        5min   0.3079   0.3065   0.3387   -0.005    0.091   0.537   0.896
+       15min   0.3301   0.4136   0.3418    0.202    0.034   0.218   0.837
+       30min   0.2214   0.3822   0.2252    0.421    0.017  -0.078   0.938
+       60min   0.2628   0.4393   0.2684    0.402    0.021  -0.027   0.858
+    (skill > 0 beats that reference. Nominal interval coverage 0.80.)
+    Beating persistence but NOT climatology, with corr ~ 0, means
+    the model has fallen back to predicting the mean at that horizon.
+
+[6] Ongoing-event peak   time-to-peak MAE 106.1 min   log-peak-flux MAE 1.266  (n=90)
+
+[7] Modality ablation (flare-in-progress skill on test)
+          both  TSS 0.2444  AUC 0.7396
+     soft_only  TSS 0.2444  AUC 0.7396
+     hard_only  TSS 0.0000  AUC 0.5000
+    clock_only  TSS 0.0000  AUC 0.5000
+
+figures: outputs\figures
+report:  outputs\reports\evaluation.json

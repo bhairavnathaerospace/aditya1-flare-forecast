@@ -1,0 +1,33 @@
+cache: 1167 sources, 1167 up to date, 0 to process with 3 worker(s)
+cache: 1167 ok, 0 empty, 0 failed (0s this run)
+
+Data: 796.2 observed days in 72 segment(s) [2024-02-01 -> 2026-09-13]
+  SoLEXS 760.5 d, HEL1OS 111.9 d, simultaneous 76.3 d; 7187 flares detected
+  archive mode (>= 30 days): stride_seconds 40.0 -> 120.0, max_batches_per_epoch 0 -> 400
+Windows: 563472  split=global: train 250088 (thinned from 338083) / val 112664 / test 112665
+fusion ablation: 826 of 7172 flares have HEL1OS covering >= 50% of the rise
+
+=== arm: soft+hard ===
+
+--- encoder: tcn ---
+  fold 0: train 1908 / test 1808 | peak MAE 0.1743 | ttp MAE 3.7 min | 78.2s
+  fold 1: train 3498 / test 2197 | peak MAE 0.2679 | ttp MAE 6.1 min | 184.3s
+  fold 2: train 5528 / test 2312 | peak MAE 0.2226 | ttp MAE 5.8 min | 535.2s
+
+=== arm: soft-only ===
+
+--- encoder: tcn ---
+  fold 0: train 1908 / test 1808 | peak MAE 0.2157 | ttp MAE 4.8 min | 205.9s
+  fold 1: train 3498 / test 2197 | peak MAE 0.2751 | ttp MAE 5.9 min | 225.3s
+  fold 2: train 5528 / test 2312 | peak MAE 0.2825 | ttp MAE 6.3 min | 394.3s
+
+==========================================================================
+FUSION ABLATION - does HEL1OS add skill? (paired, grouped by flare)
+==========================================================================
+826 flares with HEL1OS on the rise; 618 tested out of sample, 6317 paired samples, encoder tcn
+peak log-MAE  soft+hard 0.2245   soft-only 0.2608
+reduction from adding HEL1OS: +0.0363 [95% CI +0.0237, +0.0496] (+13.9%), better on 57% of flares
+  -> HEL1OS measurably helps
+exceedance AUC  soft+hard 0.825   soft-only 0.773
+
+wrote outputs\archive_goes\reports\fusion_ablation.json

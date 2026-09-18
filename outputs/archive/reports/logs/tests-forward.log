@@ -1,0 +1,33 @@
+Running 2 forward-test groups
+
+test_forward_test_end_to_end:
+  PASS  checkpoints now store the training normaliser
+  PASS  freeze records a data cutoff at the end of the data
+  PASS  freeze records thresholds and training climatology
+  PASS  a frozen model is never overwritten
+  PASS  no forecasts before any data exists after the cutoff
+  PASS  frozen normaliser is the training one, bit for bit
+  PASS  ...and a refit on the grown data would differ (why it is frozen)
+  PASS  forecasts are issued for the new data
+  PASS  every forecast is for a moment after the cutoff
+  PASS  forecasts sit on the fixed 60 s stride
+  PASS  every forecast records the model hash
+  PASS  re-running predict adds nothing and rewrites nothing
+  PASS  forecasts are scored
+  PASS  the most recent forecasts wait for their truth to settle
+  PASS  flares in the forward period are counted
+  PASS  binary skill reported with a training-climatology reference
+  PASS  flux forecasts are compared with persistence
+  PASS  a readable summary is written
+  PASS  GOES classes below the floor are excluded
+  PASS  label agreement with the independent list is reported and high
+  PASS  old checkpoint + changed data refuses to freeze
+  PASS  frozen config records the SoLEXS energy scale
+  PASS  a model frozen before scales existed reloads on the legacy scale
+
+test_goes_parsing:
+  PASS  class to flux
+  PASS  SWPC JSON parsed, ongoing flare kept with end = peak
+  PASS  HEK export parsed
+
+All forward-test checks passed.

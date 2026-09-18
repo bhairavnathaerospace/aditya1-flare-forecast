@@ -1,0 +1,836 @@
+<title>Aditya-L1 Flare Watch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --page: #eef2f6;
+  --surface: #fbfcfd;
+  --surface-2: #f2f5f8;
+  --ink: #0d1624;
+  --ink-2: #465264;
+  --muted: #768192;
+  --grid: #e3e8ee;
+  --axis: #c3cbd5;
+  --border: rgba(13, 22, 36, 0.10);
+  --focus: #2a78d6;
+  --slx: #2a78d6;
+  --slx-wash: rgba(42, 120, 214, 0.14);
+  --goes: #6b7483;
+  --czt: #eb6834;
+  --cdte: #1baf7a;
+  --prob: #4a3aa7;
+  --prob-wash: rgba(74, 58, 167, 0.12);
+  --good: #0ca30c;
+  --warn: #fab219;
+  --serious: #ec835a;
+  --crit: #d03b3b;
+  --c-flare: #aab3bf;
+  --mask: rgba(251, 252, 253, 0.62);
+  --btn: #0d1624;
+  --btn-ink: #ffffff;
+  --sans: "Barlow", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #0a0f16;
+    --surface: #111823;
+    --surface-2: #172030;
+    --ink: #eef2f7;
+    --ink-2: #b4bfcc;
+    --muted: #818c9b;
+    --grid: #1e2733;
+    --axis: #334052;
+    --border: rgba(255, 255, 255, 0.09);
+    --focus: #3987e5;
+    --slx: #3987e5;
+    --slx-wash: rgba(57, 135, 229, 0.18);
+    --goes: #9aa4b2;
+    --czt: #d95926;
+    --cdte: #199e70;
+    --prob: #9085e9;
+    --prob-wash: rgba(144, 133, 233, 0.16);
+    --c-flare: #4a5567;
+    --mask: rgba(17, 24, 35, 0.66);
+    --btn: #eef2f7;
+    --btn-ink: #0d1624;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0a0f16;
+  --surface: #111823;
+  --surface-2: #172030;
+  --ink: #eef2f7;
+  --ink-2: #b4bfcc;
+  --muted: #818c9b;
+  --grid: #1e2733;
+  --axis: #334052;
+  --border: rgba(255, 255, 255, 0.09);
+  --focus: #3987e5;
+  --slx: #3987e5;
+  --slx-wash: rgba(57, 135, 229, 0.18);
+  --goes: #9aa4b2;
+  --czt: #d95926;
+  --cdte: #199e70;
+  --prob: #9085e9;
+  --prob-wash: rgba(144, 133, 233, 0.16);
+  --c-flare: #4a5567;
+  --mask: rgba(17, 24, 35, 0.66);
+  --btn: #eef2f7;
+  --btn-ink: #0d1624;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--page);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.45;
+  margin: 0;
+}
+.wrap {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 20px 20px 48px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+button, select, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* header */
+.top {
+  display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px;
+}
+.brand .eyebrow {
+  font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 600;
+}
+.brand h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.1; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px;
+  background: var(--surface); border: 1px solid var(--border); font-size: 13px; color: var(--ink-2);
+}
+.chip b { color: var(--ink); font-weight: 600; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--warn); flex: none; }
+
+.notice {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 10px 14px; font-size: 14px; color: var(--ink-2); display: flex; gap: 10px; align-items: flex-start;
+}
+.notice strong { color: var(--ink); }
+.notice .i {
+  flex: none; width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--ink-2);
+  display: grid; place-items: center; font-size: 11px; font-weight: 700; margin-top: 1px;
+}
+
+/* controls */
+.controls {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px;
+}
+.play {
+  display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: 8px; padding: 8px 14px;
+  background: var(--btn); color: var(--btn-ink); font-weight: 600; cursor: pointer;
+}
+.play svg { width: 12px; height: 12px; fill: currentColor; }
+.clock { font-size: 22px; font-weight: 500; min-width: 7.5ch; }
+.clock small { font-size: 12px; color: var(--muted); margin-left: 2px; }
+.scrub { flex: 1 1 260px; min-width: 0; display: flex; align-items: center; }
+.scrub input { width: 100%; accent-color: var(--ink); }
+.ctl { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--ink-2); }
+.ctl select {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 4px 6px;
+}
+.jumps { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 13px; color: var(--muted); }
+.jump {
+  border: 1px solid var(--border); background: var(--surface); border-radius: 6px; padding: 3px 8px;
+  cursor: pointer; display: inline-flex; gap: 6px; align-items: center; color: var(--ink);
+}
+.jump:hover { background: var(--surface-2); }
+.sev { width: 8px; height: 8px; border-radius: 2px; flex: none; }
+
+/* tiles */
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr)); gap: 12px; }
+.tile {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px;
+  display: grid; gap: 8px; align-content: start;
+}
+.tile .label { font-size: 13px; color: var(--ink-2); font-weight: 600; letter-spacing: 0.02em; }
+.hero { font-size: 48px; font-weight: 700; line-height: 1; letter-spacing: -0.02em; }
+.big { font-size: 34px; font-weight: 700; line-height: 1; letter-spacing: -0.01em; }
+.sub { font-size: 13px; color: var(--ink-2); }
+.sub .mono { font-size: 12.5px; }
+.row { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.pill {
+  display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 2px 9px;
+  font-size: 12.5px; font-weight: 600; background: var(--surface-2); color: var(--ink); border: 1px solid var(--border);
+}
+.pill .sev { width: 9px; height: 9px; border-radius: 50%; }
+.meters { display: grid; gap: 7px; }
+.meter { display: grid; grid-template-columns: 4.2ch 1fr 4ch; gap: 8px; align-items: center; font-size: 13px; }
+.meter .track { position: relative; height: 8px; border-radius: 4px; background: var(--prob-wash); }
+.meter .fill { position: absolute; inset: 0 auto 0 0; border-radius: 4px; background: var(--prob); }
+.meter .tick { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--ink); border-radius: 1px; }
+.meter .v { text-align: right; }
+.fc { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 14px; align-items: baseline; }
+.fc dt { color: var(--ink-2); font-size: 13px; }
+.fc dd { margin: 0; }
+.fc dd b { font-size: 20px; }
+
+/* charts */
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 12px 8px;
+}
+.card-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 16px; padding: 0 4px 8px; }
+.card-head h2 { font-size: 17px; font-weight: 600; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; color: var(--ink-2); align-items: center; }
+.lk { display: inline-block; width: 16px; height: 2px; border-radius: 1px; vertical-align: middle; margin-right: 5px; }
+.lk.wash { height: 10px; border-radius: 2px; }
+.chart { position: relative; width: 100%; }
+.chart svg { display: block; width: 100%; height: auto; touch-action: pan-y; }
+.chart text { font-family: var(--sans); font-size: 11.5px; fill: var(--muted); }
+.chart .ptitle { font-size: 12.5px; fill: var(--ink-2); font-weight: 600; }
+.chart .cls { font-size: 12px; fill: var(--ink-2); font-weight: 600; }
+.chart .nowlab { font-family: var(--mono); font-size: 11.5px; fill: var(--ink); font-weight: 500; }
+.chart .evlab { font-size: 11px; fill: var(--ink-2); font-weight: 600; }
+.tip {
+  position: absolute; pointer-events: none; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 10px; font-size: 12.5px; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.14);
+  min-width: 190px; z-index: 3;
+}
+.tip .t { font-family: var(--mono); color: var(--ink-2); margin-bottom: 4px; }
+.tip .r { display: grid; grid-template-columns: 14px 1fr auto; gap: 6px; align-items: center; line-height: 1.6; }
+.tip .r b { font-family: var(--mono); font-weight: 500; color: var(--ink); text-align: right; }
+.tip .r span { color: var(--ink-2); }
+
+/* lower grid */
+.lower { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 12px; align-items: start; }
+@media (max-width: 900px) { .lower { grid-template-columns: minmax(0, 1fr); } }
+.tablewrap { overflow: auto; max-height: 460px; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+th { font-size: 12px; color: var(--muted); font-weight: 600; position: sticky; top: 0; background: var(--surface); }
+td.num, th.num { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+tbody tr { cursor: pointer; }
+tbody tr:hover { background: var(--surface-2); }
+tbody tr.on { background: var(--surface-2); box-shadow: inset 3px 0 0 var(--ink); }
+.clsc { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+.lo { color: var(--ink-2); }
+.trust { display: grid; gap: 14px; }
+.trust h3 { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.stat { background: var(--surface-2); border-radius: 8px; padding: 8px 10px; }
+.stat .k { font-size: 12px; color: var(--ink-2); }
+.stat .v { font-size: 24px; font-weight: 700; line-height: 1.15; }
+.small { font-size: 13px; color: var(--ink-2); }
+.caveats { margin: 0; padding-left: 18px; font-size: 13.5px; color: var(--ink-2); display: grid; gap: 4px; }
+footer { font-size: 12.5px; color: var(--muted); max-width: 90ch; }
+@media (max-width: 520px) {
+  .wrap { padding: 14px 16px 40px; }
+  .brand h1 { font-size: 24px; }
+  .hero { font-size: 40px; }
+  .stats { grid-template-columns: 1fr 1fr; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="eyebrow">Aditya-L1 · SoLEXS soft X-ray + HEL1OS hard X-ray</div>
+      <h1>Flare Watch</h1>
+    </div>
+    <div class="chips" id="chips"></div>
+  </header>
+
+  <div class="notice" id="notice"><span class="i" aria-hidden="true">i</span><span id="noticeText"></span></div>
+
+  <section class="controls" aria-label="Replay controls">
+    <button class="play" id="play" type="button" aria-pressed="false"><svg viewBox="0 0 12 12" aria-hidden="true"><path id="playIcon" d="M2 1l9 5-9 5z"/></svg><span id="playLab">Play</span></button>
+    <div class="clock mono" id="clock" aria-live="off">00:00<small>UTC</small></div>
+    <div class="scrub"><input id="scrub" type="range" min="0" max="1439" step="1" value="0" aria-label="Replay time (UTC)"></div>
+    <label class="ctl" for="speed">Speed
+      <select id="speed">
+        <option value="5">5 min/s</option>
+        <option value="15" selected>15 min/s</option>
+        <option value="60">1 h/s</option>
+      </select>
+    </label>
+    <label class="ctl" for="future"><input id="future" type="checkbox"> Hide what happens next</label>
+  </section>
+  <div class="jumps" id="jumps"><span>Jump to the rise of:</span></div>
+
+  <section class="tiles" aria-label="State at the replay time">
+    <div class="tile">
+      <div class="label">Soft X-ray level (SoLEXS)</div>
+      <div class="row"><span class="hero" id="tClass">—</span><span class="pill" id="tR"></span></div>
+      <div class="sub"><span class="mono" id="tFlux"></span> W/m²</div>
+      <div class="sub">GOES-18 reference: <b id="tGoes">—</b></div>
+    </div>
+    <div class="tile">
+      <div class="label">Flare in progress</div>
+      <div class="row"><span class="big" id="tNow">—</span><span class="pill" id="tAlert"></span></div>
+      <div class="meters"><div class="meter"><span>now</span><span class="track"><span class="fill" id="mNow"></span><span class="tick" id="kNow"></span></span><span class="v mono" id="vNow"></span></div></div>
+      <div class="sub" id="tPhase"></div>
+    </div>
+    <div class="tile">
+      <div class="label">Flare within the next…</div>
+      <div class="meters" id="occ"></div>
+      <div class="sub">Tick = alert threshold chosen on validation data.</div>
+    </div>
+    <div class="tile">
+      <div class="label">Flux forecast</div>
+      <dl class="fc" id="fc"></dl>
+      <div class="sub" id="tPeak"></div>
+    </div>
+  </section>
+
+  <section class="card" aria-label="Light curves and predictions">
+    <div class="card-head">
+      <h2 id="chartTitle">Light curves and predictions</h2>
+      <div class="legend">
+        <span><i class="lk" style="background:var(--goes)"></i>GOES-18 XRS-B</span>
+        <span><i class="lk" style="background:var(--slx)"></i>SoLEXS</span>
+        <span><i class="lk wash" style="background:var(--slx-wash);border:1px solid var(--slx)"></i>Forecast, 80% range</span>
+        <span><i class="lk" style="background:var(--czt)"></i>HEL1OS CZT 20–40 keV</span>
+        <span><i class="lk" style="background:var(--cdte)"></i>HEL1OS CdTe 5–20 keV</span>
+        <span><i class="lk" style="background:var(--prob)"></i>P(flare in progress)</span>
+      </div>
+    </div>
+    <div class="chart" id="chart"><div class="tip" id="tip" hidden></div></div>
+  </section>
+
+  <section class="lower">
+    <div class="card">
+      <div class="card-head"><h2>Flares of the day (GOES-18 list)</h2><span class="small">Select a row to replay its rise</span></div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr>
+            <th>Class</th><th class="num">Peak UTC</th><th class="num">P(flare) 5 min before</th>
+            <th class="num">Predicted peak 5 min before</th><th class="num">Actual vs predicted</th>
+          </tr></thead>
+          <tbody id="flares"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card trust">
+      <div class="card-head" style="padding-bottom:0"><h2>How far to trust it</h2></div>
+      <div>
+        <h3 id="valTitle">Validated on unseen test data</h3>
+        <div class="stats" id="valStats"></div>
+        <p class="small" id="valNote" style="margin:8px 0 0"></p>
+      </div>
+      <div>
+        <h3>This day, scored against GOES-18</h3>
+        <div class="tablewrap" style="max-height:none">
+          <table>
+            <thead><tr><th>Forecast ahead</th><th class="num">Model error</th><th class="num">"No change" error</th><th class="num">Truth inside 80% range</th></tr></thead>
+            <tbody id="dayScore"></tbody>
+          </table>
+        </div>
+        <p class="small" style="margin:8px 0 0">Median absolute error in dex (0.1 dex ≈ 26%). "No change" assumes the flux stays where it is.</p>
+      </div>
+      <div>
+        <h3>Known limits</h3>
+        <ul class="caveats" id="caveats"></ul>
+      </div>
+    </div>
+  </section>
+
+  <footer id="footer"></footer>
+</div>
+
+<script type="application/json" id="replay">__REPLAY__</script>
+<script>
+(() => {
+  const D = JSON.parse(document.getElementById("replay").textContent);
+  const N = 1440;
+  const $ = (id) => document.getElementById(id);
+  const bad = (v) => v === null || v === undefined || !Number.isFinite(v);
+  const C = D.curves, P = D.pred, M = D.model;
+  const SVGNS = "http://www.w3.org/2000/svg";
+  const isGoes = M.label_source === "goes";
+
+  const predAt = new Int32Array(N).fill(-1);
+  P.i.forEach((m, k) => { if (m >= 0 && m < N) predAt[m] = k; });
+  const predIdx = (m) => { for (let j = m; j >= Math.max(0, m - 5); j--) if (predAt[j] >= 0) return predAt[j]; return -1; };
+  const hm = (m) => { m = ((Math.round(m) % N) + N) % N; return String(Math.floor(m / 60)).padStart(2, "0") + ":" + String(m % 60).padStart(2, "0"); };
+  const utc = (u) => hm((u - D.t0) / 60);
+
+  // GOES class letters: A 1e-8, B 1e-7, C 1e-6, M 1e-5, X 1e-4 W/m^2
+  const LET = [["X", -4], ["M", -5], ["C", -6], ["B", -7], ["A", -8]];
+  function cls(lf) {
+    if (bad(lf)) return "—";
+    for (let i = 0; i < LET.length; i++) {
+      const [L, b] = LET[i];
+      if (lf >= b || L === "A") {
+        let v = Math.pow(10, lf - b);
+        if (L !== "X" && v.toFixed(1) === "10.0") return LET[i - 1][0] + "1.0";
+        return L + (L === "X" && v >= 10 ? v.toFixed(0) : v.toFixed(1));
+      }
+    }
+  }
+  const sevOf = (lf) => lf >= -4 ? "crit" : lf >= Math.log10(5e-5) ? "serious" : lf >= -5 ? "warn" : "c";
+  const sevVar = { crit: "var(--crit)", serious: "var(--serious)", warn: "var(--warn)", c: "var(--c-flare)" };
+  function rScale(lf) {
+    if (bad(lf)) return null;
+    if (lf >= Math.log10(2e-3)) return ["R5", "Extreme radio blackout", "crit"];
+    if (lf >= -3) return ["R4", "Severe radio blackout", "crit"];
+    if (lf >= -4) return ["R3", "Strong radio blackout", "crit"];
+    if (lf >= Math.log10(5e-5)) return ["R2", "Moderate radio blackout", "serious"];
+    if (lf >= -5) return ["R1", "Minor radio blackout", "warn"];
+    return ["R0", "No radio blackout", "good"];
+  }
+  function sci(lf) {
+    if (bad(lf)) return "—";
+    const e = Math.floor(lf);
+    return (Math.pow(10, lf - e)).toFixed(1) + "×10" + String(e).replace("-", "⁻").replace(/\d/g, (d) => "⁰¹²³⁴⁵⁶⁷⁸⁹"[d]);
+  }
+  const pct = (p) => bad(p) ? "—" : Math.round(100 * p) + "%";
+  function factor(d) { // d = predicted - actual, dex
+    if (bad(d)) return "—";
+    const f = Math.pow(10, Math.abs(d));
+    if (f < 1.15) return "on target";
+    return (f >= 10 ? f.toFixed(0) : f.toFixed(1)) + "× " + (d < 0 ? "too low" : "too high");
+  }
+  function el(tag, attrs, parent) {
+    const e = document.createElementNS(SVGNS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+
+  // ---------- static text ----------
+  const day = new Date(D.t0 * 1000);
+  const dayStr = day.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+  const chips = $("chips");
+  [["Replay", dayStr, "var(--warn)"], ["Model", M.name + " · " + M.sha256.slice(0, 8), null],
+   ["Labels", isGoes ? "GOES ≥C1.0" : "SoLEXS detector", null]].forEach(([k, v, dot]) => {
+    const c = document.createElement("span"); c.className = "chip";
+    if (dot) { const d = document.createElement("i"); d.className = "dot"; d.style.background = dot; c.appendChild(d); }
+    c.appendChild(document.createTextNode(k + " "));
+    const b = document.createElement("b"); b.textContent = v; c.appendChild(b);
+    chips.appendChild(c);
+  });
+  $("noticeText").innerHTML = "<strong>Replay of archived data, not a live feed.</strong> Each prediction was made by the frozen model " +
+    "using only the two hours of data before that minute, as a live system would. The day (" + dayStr + ") lies in the unseen test period. " +
+    (isGoes
+      ? "This model learned GOES-18 flare classes (≥C1.0)."
+      : "This model (v1) learned a loose flare definition — the SoLEXS detector marks about two-thirds of observed time as flaring — so its " +
+        "probabilities sit high even between flares. The GOES-class model (v2) replaces it once its validation is complete.");
+
+  // jump chips: M and X flares
+  const jumps = $("jumps");
+  D.flares.filter((f) => f.peak_flux >= 1e-5).forEach((f) => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "jump";
+    const s = document.createElement("i"); s.className = "sev"; s.style.background = sevVar[sevOf(Math.log10(f.peak_flux))];
+    b.appendChild(s); b.appendChild(document.createTextNode(f.class + " " + utc(f.peak)));
+    b.addEventListener("click", () => setNow(Math.round((f.peak - D.t0) / 60) - 5));
+    jumps.appendChild(b);
+  });
+
+  // ---------- chart ----------
+  const chartBox = $("chart"), tip = $("tip");
+  let svg, geo, dyn;
+  const series = {
+    goes: C.goes_xrsb_log, slx: C.solexs_flux_log,
+    czt: C.hel1os_czt1_20_40.map((v) => bad(v) || v <= 0 ? null : Math.log10(v)),
+    cdte: C.hel1os_cdte1_5_20.map((v) => bad(v) || v <= 0 ? null : Math.log10(v)),
+    pnow: Array.from({ length: N }, (_, m) => predAt[m] >= 0 ? P.p_now[predAt[m]] : null),
+  };
+  const fluxVals = series.goes.concat(series.slx).filter((v) => !bad(v));
+  const fMin = Math.floor(Math.min(...fluxVals) - 0.15), fMax = Math.max(-3, Math.ceil(Math.max(...fluxVals) + 0.2));
+  const hardVals = series.czt.concat(series.cdte).filter((v) => !bad(v));
+  const hMin = Math.max(0, Math.floor(Math.min(...hardVals))), hMax = Math.ceil(Math.max(...hardVals) + 0.05);
+
+  function path(arr, x, y) {
+    let d = "", pen = false;
+    for (let m = 0; m < arr.length; m++) {
+      const v = arr[m];
+      if (bad(v)) { pen = false; continue; }
+      d += (pen ? "L" : "M") + x(m).toFixed(1) + " " + y(v).toFixed(1);
+      pen = true;
+    }
+    return d;
+  }
+  function area(arr, x, y, y0) {
+    let d = "", run = [];
+    const flush = () => {
+      if (run.length > 1) d += "M" + x(run[0]).toFixed(1) + " " + y0 + run.map((m) => "L" + x(m).toFixed(1) + " " + y(arr[m]).toFixed(1)).join("") + "L" + x(run[run.length - 1]).toFixed(1) + " " + y0 + "Z";
+      run = [];
+    };
+    for (let m = 0; m < arr.length; m++) { if (bad(arr[m])) flush(); else run.push(m); }
+    flush();
+    return d;
+  }
+
+  function render() {
+    const W = Math.max(320, chartBox.clientWidth);
+    const narrow = W < 640;
+    const ml = narrow ? 44 : 54, mr = narrow ? 30 : 40;
+    const pw = W - ml - mr;
+    const H = { flux: narrow ? 190 : 250, hard: narrow ? 110 : 130, prob: narrow ? 80 : 96, ev: 44 };
+    const gap = 30, top = 22;
+    const y0 = { flux: top, hard: top + H.flux + gap, prob: top + H.flux + gap + H.hard + gap };
+    y0.ev = y0.prob + H.prob + gap - 6;
+    const total = y0.ev + H.ev + 22;
+    const x = (m) => ml + (m / N) * pw;
+    geo = { W, ml, mr, pw, H, y0, total, x, narrow };
+
+    if (svg) svg.remove();
+    svg = el("svg", { viewBox: `0 0 ${W} ${total}`, role: "img", "aria-label": "Soft X-ray flux, hard X-ray counts, flare probability and GOES flares over the replay day" });
+    chartBox.insertBefore(svg, tip);
+    const defs = el("defs", {}, svg);
+    const clip = el("clipPath", { id: "plotclip" }, defs);
+    el("rect", { x: ml, y: 0, width: pw, height: total }, clip);
+
+    // x grid + labels (every 3 h, every 6 h when narrow)
+    const gx = el("g", {}, svg);
+    const step = narrow ? 360 : 180;
+    for (let m = 0; m <= N; m += step) {
+      el("line", { x1: x(m), x2: x(m), y1: y0.flux, y2: y0.ev + H.ev, stroke: "var(--grid)", "stroke-width": 1 }, gx);
+      const t = el("text", { x: x(m), y: y0.ev + H.ev + 16, "text-anchor": m === 0 ? "start" : m === N ? "end" : "middle" }, gx);
+      t.textContent = m === N ? "24:00" : hm(m);
+    }
+
+    // --- flux panel ---
+    const yF = (v) => y0.flux + H.flux * (1 - (v - fMin) / (fMax - fMin));
+    const g1 = el("g", {}, svg);
+    el("text", { x: ml, y: y0.flux - 8, class: "ptitle" }, g1).textContent = "Soft X-ray flux, W/m² (log)";
+    for (let e = fMin; e <= fMax; e++) {
+      el("line", { x1: ml, x2: ml + pw, y1: yF(e), y2: yF(e), stroke: e === fMin ? "var(--axis)" : "var(--grid)", "stroke-width": 1 }, g1);
+      el("text", { x: ml - 6, y: yF(e) + 4, "text-anchor": "end" }, g1).textContent = "10" + String(e).replace("-", "⁻").replace(/\d/g, (d) => "⁰¹²³⁴⁵⁶⁷⁸⁹"[d]);
+    }
+    LET.forEach(([L, b]) => {
+      const mid = b + 0.5;
+      if (mid > fMin && mid < fMax) el("text", { x: ml + pw + 10, y: yF(mid) + 4, class: "cls" }, g1).textContent = L;
+    });
+    const gl = el("g", { "clip-path": "url(#plotclip)" }, g1);
+    el("path", { d: path(series.goes, x, yF), fill: "none", stroke: "var(--goes)", "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }, gl);
+    el("path", { d: path(series.slx, x, yF), fill: "none", stroke: "var(--slx)", "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }, gl);
+
+    // --- hard panel ---
+    const yH = (v) => y0.hard + H.hard * (1 - (v - hMin) / (hMax - hMin));
+    const g2 = el("g", {}, svg);
+    el("text", { x: ml, y: y0.hard - 8, class: "ptitle" }, g2).textContent = "Hard X-ray count rate, counts/s (log)";
+    for (let e = hMin; e <= hMax; e++) {
+      el("line", { x1: ml, x2: ml + pw, y1: yH(e), y2: yH(e), stroke: e === hMin ? "var(--axis)" : "var(--grid)", "stroke-width": 1 }, g2);
+      el("text", { x: ml - 6, y: yH(e) + 4, "text-anchor": "end" }, g2).textContent = e >= 3 ? (Math.pow(10, e) / 1000) + "k" : String(Math.pow(10, e));
+    }
+    const gh = el("g", { "clip-path": "url(#plotclip)" }, g2);
+    el("path", { d: path(series.cdte, x, yH), fill: "none", stroke: "var(--cdte)", "stroke-width": 1.5, "stroke-linejoin": "round" }, gh);
+    el("path", { d: path(series.czt, x, yH), fill: "none", stroke: "var(--czt)", "stroke-width": 1.5, "stroke-linejoin": "round" }, gh);
+
+    // --- probability panel ---
+    const yP = (v) => y0.prob + H.prob * (1 - v);
+    const g3 = el("g", {}, svg);
+    el("text", { x: ml, y: y0.prob - 8, class: "ptitle" }, g3).textContent = "Model: probability a flare is in progress";
+    [0, 0.5, 1].forEach((v) => {
+      el("line", { x1: ml, x2: ml + pw, y1: yP(v), y2: yP(v), stroke: v === 0 ? "var(--axis)" : "var(--grid)", "stroke-width": 1 }, g3);
+      el("text", { x: ml - 6, y: yP(v) + 4, "text-anchor": "end" }, g3).textContent = Math.round(v * 100) + "%";
+    });
+    const gp = el("g", { "clip-path": "url(#plotclip)" }, g3);
+    el("path", { d: area(series.pnow, x, yP, yP(0).toFixed(1)), fill: "var(--prob-wash)", stroke: "none" }, gp);
+    el("path", { d: path(series.pnow, x, yP), fill: "none", stroke: "var(--prob)", "stroke-width": 1.5, "stroke-linejoin": "round" }, gp);
+    el("line", { x1: ml, x2: ml + pw, y1: yP(M.thresholds.in_flare), y2: yP(M.thresholds.in_flare), stroke: "var(--ink-2)", "stroke-width": 1 }, g3);
+    const thl = el("text", { x: ml + pw + 4, y: yP(M.thresholds.in_flare) + 4 }, g3);
+    thl.textContent = narrow ? "alert" : "alert";
+
+    // --- GOES events strip ---
+    const g4 = el("g", {}, svg);
+    el("text", { x: ml, y: y0.ev + 2, class: "ptitle" }, g4).textContent = "GOES-18 flares (≥C1)";
+    let lastLab = -1e9;
+    D.flares.slice().sort((a, b) => a.start - b.start).forEach((f) => {
+      const a = x(Math.max(0, (f.start - D.t0) / 60)), b = x(Math.min(N, (f.end - D.t0) / 60));
+      const lf = Math.log10(f.peak_flux), sv = sevOf(lf);
+      const r = el("rect", { x: a, y: y0.ev + 20, width: Math.max(3, b - a), height: 12, rx: 3, fill: sevVar[sv], class: "evbar", tabindex: 0 }, g4);
+      r.dataset.flare = JSON.stringify([f.class, utc(f.start), utc(f.peak), utc(f.end)]);
+      if (lf >= Math.log10(3e-5) || lf >= -4) {
+        const cx = x((f.peak - D.t0) / 60);
+        if (cx - lastLab > (narrow ? 44 : 38)) {
+          el("text", { x: cx, y: y0.ev + 44, "text-anchor": "middle", class: "evlab" }, g4).textContent = f.class;
+          lastLab = cx;
+        }
+      }
+    });
+
+    // dynamic layer + hover layer
+    dyn = el("g", {}, svg);
+    const hover = el("line", { y1: y0.flux, y2: y0.ev + H.ev, stroke: "var(--muted)", "stroke-width": 1, visibility: "hidden" }, svg);
+    const hit = el("rect", { x: ml, y: y0.flux, width: pw, height: y0.ev + H.ev - y0.flux, fill: "transparent", style: "cursor:crosshair" }, svg);
+    const toM = (ev) => {
+      const r = svg.getBoundingClientRect();
+      const px = (ev.clientX - r.left) * (W / r.width);
+      return Math.max(0, Math.min(N - 1, Math.round(((px - ml) / pw) * N)));
+    };
+    hit.addEventListener("pointermove", (ev) => {
+      const m = toM(ev);
+      hover.setAttribute("x1", x(m)); hover.setAttribute("x2", x(m)); hover.setAttribute("visibility", "visible");
+      showTip(m, ev);
+    });
+    hit.addEventListener("pointerleave", () => { hover.setAttribute("visibility", "hidden"); tip.hidden = true; });
+    hit.addEventListener("click", (ev) => setNow(toM(ev)));
+    svg.querySelectorAll(".evbar").forEach((r) => {
+      const show = (ev) => {
+        const [c, s, p, e] = JSON.parse(r.dataset.flare);
+        tip.replaceChildren();
+        const t = document.createElement("div"); t.className = "t"; t.textContent = "GOES-18 flare"; tip.appendChild(t);
+        [["Class", c], ["Start", s], ["Peak", p], ["End", e]].forEach(([k, v]) => tip.appendChild(tipRow(null, k, v)));
+        placeTip(ev.clientX !== undefined && ev.clientX ? ev : { clientX: r.getBoundingClientRect().left, clientY: r.getBoundingClientRect().top });
+      };
+      r.addEventListener("pointermove", show); r.addEventListener("focus", show);
+      r.addEventListener("pointerleave", () => { tip.hidden = true; }); r.addEventListener("blur", () => { tip.hidden = true; });
+      r.addEventListener("click", () => { const f = JSON.parse(r.dataset.flare); const fl = D.flares.find((q) => q.class === f[0] && utc(q.peak) === f[2]); if (fl) setNow(Math.round((fl.peak - D.t0) / 60) - 5); });
+    });
+    geo.yF = yF; geo.yH = yH; geo.yP = yP;
+    drawDynamic();
+  }
+
+  function tipRow(color, label, value) {
+    const r = document.createElement("div"); r.className = "r";
+    const k = document.createElement("i");
+    if (color) { k.className = "lk"; k.style.background = color; k.style.width = "14px"; k.style.margin = "0"; }
+    const s = document.createElement("span"); s.textContent = label;
+    const b = document.createElement("b"); b.textContent = value;
+    r.append(k, s, b);
+    return r;
+  }
+  function placeTip(ev) {
+    tip.hidden = false;
+    const box = chartBox.getBoundingClientRect();
+    let left = ev.clientX - box.left + 14, topp = ev.clientY - box.top + 14;
+    const tw = tip.offsetWidth, th = tip.offsetHeight;
+    if (left + tw > box.width) left = ev.clientX - box.left - tw - 14;
+    if (topp + th > box.height) topp = box.height - th - 4;
+    tip.style.left = Math.max(0, left) + "px"; tip.style.top = Math.max(0, topp) + "px";
+  }
+  function showTip(m, ev) {
+    tip.replaceChildren();
+    const t = document.createElement("div"); t.className = "t"; t.textContent = hm(m) + " UTC"; tip.appendChild(t);
+    const hard = (v) => bad(v) ? "no data" : Math.round(Math.pow(10, v)).toLocaleString("en") + " /s";
+    tip.appendChild(tipRow("var(--slx)", "SoLEXS", bad(series.slx[m]) ? "no data" : cls(series.slx[m])));
+    tip.appendChild(tipRow("var(--goes)", "GOES-18", bad(series.goes[m]) ? "no data" : cls(series.goes[m])));
+    tip.appendChild(tipRow("var(--czt)", "CZT 20–40 keV", hard(series.czt[m])));
+    tip.appendChild(tipRow("var(--cdte)", "CdTe 5–20 keV", hard(series.cdte[m])));
+    tip.appendChild(tipRow("var(--prob)", "P(flare now)", pct(series.pnow[m])));
+    placeTip(ev);
+  }
+
+  // ---------- replay state ----------
+  let now = 0;
+  const hideFuture = $("future");
+
+  function drawDynamic() {
+    if (!dyn) return;
+    dyn.replaceChildren();
+    const { x, ml, pw, H, y0, yF } = geo;
+    const xn = x(now);
+    // fade (or hide) everything after "now" in each data panel
+    const alpha = hideFuture.checked ? "var(--surface)" : "var(--mask)";
+    [[y0.flux, H.flux], [y0.hard, H.hard], [y0.prob, H.prob]].forEach(([yy, hh]) => {
+      el("rect", { x: xn + 0.5, y: yy - 1, width: Math.max(0, ml + pw - xn), height: hh + 2, fill: alpha }, dyn);
+    });
+    // forecast fan from the latest prediction
+    const k = predIdx(now);
+    if (k >= 0) {
+      const hz = [0].concat(D.horizons_min);
+      const q = (j) => hz.map((h, i) => i === 0 ? P.now_log[k] : P.fc_log[k][i - 1][j]);
+      const lo = q(0), md = q(1), hi = q(2);
+      const ok = hz.map((h, i) => !bad(lo[i]) && !bad(md[i]) && !bad(hi[i]));
+      const pts = hz.map((h, i) => [x(now + h), i]).filter(([, i]) => ok[i]);
+      if (pts.length > 1) {
+        const g = el("g", { "clip-path": "url(#plotclip)" }, dyn);
+        const up = pts.map(([px, i]) => px.toFixed(1) + "," + yF(hi[i]).toFixed(1));
+        const dn = pts.slice().reverse().map(([px, i]) => px.toFixed(1) + "," + yF(lo[i]).toFixed(1));
+        el("polygon", { points: up.concat(dn).join(" "), fill: "var(--slx-wash)", stroke: "none" }, g);
+        el("polyline", { points: pts.map(([px, i]) => px.toFixed(1) + "," + yF(md[i]).toFixed(1)).join(" "), fill: "none", stroke: "var(--slx)", "stroke-width": 2, "stroke-linejoin": "round" }, g);
+        pts.slice(1).forEach(([px, i]) => el("circle", { cx: px, cy: yF(md[i]), r: 4, fill: "var(--slx)", stroke: "var(--surface)", "stroke-width": 2 }, g));
+      }
+    }
+    // now line
+    el("line", { x1: xn, x2: xn, y1: y0.flux - 4, y2: y0.ev + H.ev, stroke: "var(--ink)", "stroke-width": 1.5 }, dyn);
+    const lab = el("text", { x: xn, y: 12, "text-anchor": xn > geo.W - 70 ? "end" : xn < 90 ? "start" : "middle", class: "nowlab" }, dyn);
+    lab.textContent = "now " + hm(now);
+  }
+
+  function setNow(m) {
+    now = Math.max(0, Math.min(N - 1, Math.round(m)));
+    $("scrub").value = now;
+    $("scrub").setAttribute("aria-valuetext", hm(now) + " UTC");
+    $("clock").firstChild.textContent = hm(now);
+    updateTiles();
+    drawDynamic();
+    document.querySelectorAll("#flares tr").forEach((tr) => tr.classList.toggle("on", Math.abs(Number(tr.dataset.m) - now) <= 6));
+  }
+
+  function setPill(node, sev, text) {
+    node.replaceChildren();
+    const d = document.createElement("i"); d.className = "sev"; d.style.background = sev ? `var(--${sev})` : "var(--muted)";
+    node.append(d, document.createTextNode(text));
+  }
+
+  function updateTiles() {
+    // SoLEXS level: last observed minute at or before now
+    let m = now; while (m > 0 && bad(series.slx[m]) && now - m < 10) m--;
+    const lf = series.slx[m];
+    $("tClass").textContent = cls(lf);
+    $("tFlux").textContent = sci(lf);
+    $("tGoes").textContent = cls(series.goes[now]);
+    const r = rScale(lf);
+    if (r) setPill($("tR"), r[2], r[0] + " · " + r[1]); else $("tR").replaceChildren();
+
+    const k = predIdx(now);
+    const has = k >= 0;
+    const pn = has ? P.p_now[k] : null;
+    $("tNow").textContent = pct(pn);
+    $("vNow").textContent = pct(pn);
+    $("mNow").style.width = has ? (100 * pn) + "%" : "0";
+    $("kNow").style.left = `calc(${100 * M.thresholds.in_flare}% - 1px)`;
+    if (!has) setPill($("tAlert"), null, "No prediction (data gap)");
+    else if (pn >= M.thresholds.in_flare) setPill($("tAlert"), "serious", "Flare alert");
+    else setPill($("tAlert"), "good", "Below alert");
+    if (has) {
+      const ph = P.phase[k];
+      const best = ph.map((p, i) => [p, i]).sort((a, b) => b[0] - a[0]);
+      $("tPhase").textContent = "Most likely phase: " + D.phase_names[best[0][1]] + " (" + pct(best[0][0]) + "), then " + D.phase_names[best[1][1]] + " (" + pct(best[1][0]) + ")";
+    } else $("tPhase").textContent = "";
+
+    const occ = $("occ"); occ.replaceChildren();
+    D.occ_horizons_min.forEach((h, i) => {
+      const p = has ? P.p_occ[k][i] : null;
+      const row = document.createElement("div"); row.className = "meter";
+      const a = document.createElement("span"); a.textContent = h + " min";
+      const tr = document.createElement("span"); tr.className = "track";
+      const f = document.createElement("span"); f.className = "fill"; f.style.width = bad(p) ? "0" : (100 * p) + "%";
+      const t = document.createElement("span"); t.className = "tick"; t.style.left = `calc(${100 * M.thresholds.occurrence[i]}% - 1px)`;
+      tr.append(f, t);
+      const v = document.createElement("span"); v.className = "v mono"; v.textContent = pct(p);
+      row.append(a, tr, v); occ.appendChild(row);
+    });
+
+    const fc = $("fc"); fc.replaceChildren();
+    if (has) {
+      [[2, "In 15 min"], [4, "In 60 min"]].forEach(([h, name]) => {
+        const [lo, md, hi] = P.fc_log[k][h];
+        const dt = document.createElement("dt"); dt.textContent = name;
+        const dd = document.createElement("dd");
+        const b = document.createElement("b"); b.textContent = cls(md);
+        const s = document.createElement("span"); s.className = "lo"; s.textContent = "  80%: " + cls(lo) + " – " + cls(hi);
+        dd.append(b, s); fc.append(dt, dd);
+      });
+    }
+    const pk = has ? P.peak_log[k] : null, pm = has ? P.peak_min[k] : null;
+    if (!has) $("tPeak").textContent = "No prediction at this minute.";
+    else if (bad(pk)) $("tPeak").textContent = "Peak estimate appears only when the model thinks a flare is under way.";
+    else {
+      const when = pm > 1 ? "in about " + Math.round(pm) + " min" : pm >= -1 ? "about now" : "already passed (" + Math.round(-pm) + " min ago)";
+      $("tPeak").textContent = "Predicted peak of this flare: " + cls(pk) + ", " + when + ".";
+    }
+  }
+
+  // ---------- flare table ----------
+  const tb = $("flares");
+  D.flares.slice().sort((a, b) => a.peak - b.peak).forEach((f) => {
+    const mPeak = Math.round((f.peak - D.t0) / 60), mAsk = mPeak - 5;
+    const k = mAsk >= 0 ? predIdx(mAsk) : -1;
+    const tr = document.createElement("tr"); tr.dataset.m = mAsk; tr.tabIndex = 0;
+    const lf = Math.log10(f.peak_flux);
+    const td = (text, num) => { const c = document.createElement("td"); if (num) c.className = "num"; c.textContent = text; return c; };
+    const c0 = document.createElement("td"); const sp = document.createElement("span"); sp.className = "clsc";
+    const sw = document.createElement("i"); sw.className = "sev"; sw.style.background = sevVar[sevOf(lf)];
+    sp.append(sw, document.createTextNode(f.class)); c0.appendChild(sp);
+    const pk = k >= 0 ? P.peak_log[k] : null;
+    tr.append(c0, td(mPeak >= 0 && mPeak < N ? utc(f.peak) : "(prev. day)", true), td(k >= 0 ? pct(P.p_now[k]) : "—", true),
+      td(bad(pk) ? "no estimate" : cls(pk), true), td(bad(pk) ? "—" : factor(pk - lf), true));
+    const go = () => setNow(mAsk);
+    tr.addEventListener("click", go);
+    tr.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } });
+    tb.appendChild(tr);
+  });
+
+  // ---------- trust panel ----------
+  const vs = M.validated_skill;
+  const stats = $("valStats");
+  if (vs) {
+    const n = vs.nowcast, o = vs.occurrence["15min"];
+    [["Flares caught (now)", pct(n.POD)], ["False alarms (now)", pct(n.FAR)], ["Skill score TSS", n.TSS.toFixed(2)],
+     ["Caught 15 min ahead", pct(o.POD)], ["False alarms 15 min", pct(o.FAR)], ["Skill score TSS", o.TSS.toFixed(2)]]
+      .forEach(([kk, v]) => { const s = document.createElement("div"); s.className = "stat"; const a = document.createElement("div"); a.className = "k"; a.textContent = kk; const b = document.createElement("div"); b.className = "v"; b.textContent = v; s.append(a, b); stats.appendChild(s); });
+    $("valNote").textContent = (isGoes ? "Flare = GOES ≥C1.0 in progress. " : "Flare = the loose SoLEXS detector definition, not GOES classes — do not compare with published ≥C/≥M scores. ") +
+      "Percentages are of test minutes, with thresholds fixed on validation data.";
+  } else {
+    $("valNote").textContent = "Validated scores are not available for this model yet.";
+  }
+  const ds = $("dayScore");
+  D.horizons_min.forEach((h, hi) => {
+    const em = [], ep = [];
+    let inside = 0, n = 0;
+    P.i.forEach((m, k) => {
+      const t = m + h;
+      if (t >= N || bad(series.goes[t])) return;
+      const [lo, md, up] = P.fc_log[k][hi];
+      if (bad(md)) return;
+      em.push(Math.abs(md - series.goes[t]));
+      if (!bad(series.goes[m])) ep.push(Math.abs(series.goes[m] - series.goes[t]));
+      n++; if (series.goes[t] >= lo && series.goes[t] <= up) inside++;
+    });
+    const med = (a) => { if (!a.length) return NaN; const s = a.slice().sort((p, q) => p - q); return s[Math.floor(s.length / 2)]; };
+    const tr = document.createElement("tr");
+    [[h + " min", false], [med(em).toFixed(3), true], [med(ep).toFixed(3), true], [n ? Math.round(100 * inside / n) + "%" : "—", true]].forEach(([v, num]) => {
+      const c = document.createElement("td"); c.textContent = v; if (num) c.className = "num"; tr.appendChild(c);
+    });
+    ds.appendChild(tr);
+  });
+  const cav = isGoes ? [
+    "Replayed from the archive: PRADAN releases Aditya-L1 data days to weeks after observation, so this is not yet a live alert.",
+    "Warning of a big flare before it starts is not proven; the forecast mainly tracks flares that are already rising.",
+    "Peak sizes of the largest flares tend to be under-predicted.",
+  ] : [
+    "Replayed from the archive: PRADAN releases Aditya-L1 data days to weeks after observation, so this is not yet a live alert.",
+    "On significant flares, this model ranks upcoming flares no better than the current X-ray level does.",
+    "Its probabilities use a loose flare definition, so they stay high for most of an active day.",
+    "Peak sizes of the largest flares are under-predicted (see the X1.2 row).",
+    "SoLEXS flux is mapped to GOES units with a fit made on the previous day; the model forecasts SoLEXS flux, scored here against GOES-18.",
+  ];
+  cav.forEach((c) => { const li = document.createElement("li"); li.textContent = c; $("caveats").appendChild(li); });
+  $("footer").textContent = "Data: Aditya-L1 SoLEXS and HEL1OS Level-1 (ISRO PRADAN); GOES-18 XRS-B 1-min flux and flare list (NOAA NCEI). " +
+    "Model " + M.name + " (" + M.sha256 + "), trained on data up to " + (M.train_end_utc || "—") + " UTC, frozen with data cutoff " + (M.data_cutoff_utc || "—") +
+    " UTC. Calibration: " + D.calibration + ". Coverage this day: SoLEXS " + Math.round(100 * D.coverage.solexs_frac) + "%, HEL1OS " + Math.round(100 * D.coverage.hel1os_frac) + "%.";
+
+  // ---------- controls ----------
+  let playing = false, last = 0, acc = 0;
+  const playBtn = $("play");
+  function setPlaying(p) {
+    playing = p;
+    playBtn.setAttribute("aria-pressed", String(p));
+    $("playLab").textContent = p ? "Pause" : "Play";
+    $("playIcon").setAttribute("d", p ? "M2 1h3v10H2zM7 1h3v10H7z" : "M2 1l9 5-9 5z");
+    if (p) { if (now >= N - 1) setNow(0); last = 0; acc = 0; requestAnimationFrame(tick); }
+  }
+  function tick(ts) {
+    if (!playing) return;
+    if (!last) last = ts;
+    acc += ((ts - last) / 1000) * Number($("speed").value);
+    last = ts;
+    if (acc >= 1) { const s = Math.floor(acc); acc -= s; setNow(now + s); if (now >= N - 1) { setPlaying(false); return; } }
+    requestAnimationFrame(tick);
+  }
+  playBtn.addEventListener("click", () => setPlaying(!playing));
+  $("scrub").addEventListener("input", (e) => { setPlaying(false); setNow(Number(e.target.value)); });
+  hideFuture.addEventListener("change", drawDynamic);
+
+  const x1 = D.flares.filter((f) => f.peak_flux >= 1e-4).sort((a, b) => b.peak_flux - a.peak_flux)[0] || D.flares.slice().sort((a, b) => b.peak_flux - a.peak_flux)[0];
+  const startM = x1 ? Math.round((x1.peak - D.t0) / 60) - 2 : 720;
+  render();
+  setNow(startM);
+  new ResizeObserver(() => { if (Math.abs(chartBox.clientWidth - geo.W) > 2) render(); }).observe(chartBox);
+})();
+</script>

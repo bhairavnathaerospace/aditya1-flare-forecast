@@ -1,0 +1,30 @@
+{
+  "name": "v1",
+  "frozen_at_utc": "2026-09-15 00:49:30",
+  "frozen_at_unix": 1789433370.7132335,
+  "checkpoint": "outputs\\archive\\checkpoints\\best.pt",
+  "checkpoint_sha256": "680c67d5d42f823d6eb680aa28ed2c422769ae2144247526dd9ae3f523675633",
+  "checkpoint_epoch": 26,
+  "data_cutoff_utc": "2026-09-13 23:59:20",
+  "data_cutoff_unix": 1789343960.0,
+  "normaliser": "refit (split verified identical to training)",
+  "thresholds": {
+    "in_flare": 0.5370000004768372,
+    "occurrence": [
+      0.5950000286102295,
+      0.6320000290870667,
+      0.6930000185966492
+    ]
+  },
+  "training_climatology": {
+    "in_flare_rate": 0.6708988547325134,
+    "occurrence_rate": [
+      0.7773287892341614,
+      0.8511210083961487,
+      0.9322962164878845
+    ],
+    "mean_log_flux": 3.0940651893615723
+  },
+  "train_end_utc": "2025-09-07 09:37:40",
+  "n_sources_at_freeze": 1167
+}

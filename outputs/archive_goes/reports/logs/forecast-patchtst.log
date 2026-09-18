@@ -1,0 +1,35 @@
+cache: 1167 sources, 1167 up to date, 0 to process with 3 worker(s)
+cache: 1167 ok, 0 empty, 0 failed (0s this run)
+
+Data: 796.2 observed days in 72 segment(s) [2024-02-01 -> 2026-09-13]
+  SoLEXS 760.5 d, HEL1OS 111.9 d, simultaneous 76.3 d; 7187 flares detected
+  archive mode (>= 30 days): stride_seconds 40.0 -> 120.0, max_batches_per_epoch 0 -> 400
+Windows: 563472  split=global: train 250088 (thinned from 338083) / val 112664 / test 112665
+  rise samples : 70633 drawn from 7172 events (of 7187 detected)
+  lead time    : median 5.7 min, max 100.7 min
+  large-flare threshold : 1.0e-05 W/m^2 (GOES M1.0) (25% of samples positive)
+  long-duration events  : 5% of samples
+  samples per event     : min 1, max 101
+
+--- encoder: patchtst ---
+  fold 0: train 15892 / test 17062 | peak MAE 0.2531 | ttp MAE 4.5 min | 1036.4s
+  fold 1: train 31527 / test 17671 | peak MAE 0.2359 | ttp MAE 4.5 min | 1529.8s
+  fold 2: train 47087 / test 18188 | peak MAE 0.2702 | ttp MAE 5.0 min | 2584.5s
+
+==========================================================================
+RISE-PHASE FORECASTING - grouped rolling-origin CV over events
+==========================================================================
+7172 events, 70633 rise samples, large-flare threshold 1.0e-05 W/m^2 (GOES M1.0)
+
+     encoder  folds       peak logMAE  skill/cur  skill/clim  ttp min  ttp skill  exc AUC    sec
+    patchtst      3   0.2531 +/-0.0140      0.001       0.286      4.7     -0.026    0.796   5151
+
+reference MAE: current level 0.2534, training climatology 0.3591
+skill > 0 beats that reference; skill <= 0 means the model adds nothing over it.
+
+exceedance AUC rests on 3 fold(s) with both classes and 875 positive event(s) in total; current flux alone scores AUC 0.851.
+
+Spread across folds is the number that matters: with a handful of
+events, a mean without its fold-to-fold scatter is not a result.
+
+wrote outputs\archive_goes_patchtst\reports\forecast_cv.json
