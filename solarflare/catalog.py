@@ -44,7 +44,7 @@ HARD_BEFORE_SOFT_S = 300.0
 
 def flux_class(flux: float) -> str:
     """1.23e-5 -> "M1.2"; below A1.0 or unusable -> ""."""
-    if not (flux == flux) or flux < _CLASS_SCALE["A"]:
+    if not np.isfinite(flux) or flux < _CLASS_SCALE["A"]:
         return ""
     letters = sorted(_CLASS_SCALE, key=_CLASS_SCALE.get)
     letter = max((k for k, v in _CLASS_SCALE.items() if flux >= v), key=_CLASS_SCALE.get)
@@ -81,7 +81,7 @@ class PiecewiseCalibration:
 
     @classmethod
     def fit(cls, log_rate: np.ndarray, log_flux: np.ndarray, width: float = 0.2,
-            min_n: int = 30) -> "PiecewiseCalibration":
+            min_n: int = 30) -> PiecewiseCalibration:
         lr = np.asarray(log_rate, dtype=np.float64)
         lf = np.asarray(log_flux, dtype=np.float64)
         edges = np.arange(np.floor(lr.min() / width) * width, lr.max() + width, width)

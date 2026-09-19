@@ -41,7 +41,7 @@ class FluxAnchor:
     default: float
 
 
-def flux_anchor(model_cfg, pre_cfg, mean_soft, std_soft) -> "FluxAnchor | None":
+def flux_anchor(model_cfg, pre_cfg, mean_soft, std_soft) -> FluxAnchor | None:
     """Build the anchor from a fitted normaliser, or None when switched off."""
     if not getattr(model_cfg, "anchor_flux", False):
         return None

@@ -482,7 +482,8 @@ def test_flux_anchor_is_the_calibrated_current_flux():
     pre = PreprocessConfig()
     pre_names_idx = 6                      # log_goes_long
     mcfg = ModelConfig(hidden=16, dilations=(1, 2), anchor_flux=True)
-    mean = np.zeros(24); std = np.ones(24)
+    mean = np.zeros(24)
+    std = np.ones(24)
     a = flux_anchor(mcfg, pre, mean, std)
     check("anchor points at log_goes_long", a.index == pre_names_idx, str(a.index))
     check("anchor is off unless asked", flux_anchor(ModelConfig(), pre, mean, std) is None)
