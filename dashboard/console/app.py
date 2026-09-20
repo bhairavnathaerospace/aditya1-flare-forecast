@@ -1,13 +1,19 @@
-"""The console window: actions, three tabs, a terminal and a watchdog, refreshed every 5 s.
+"""The console: two windows, refreshed every second.
 
-Tabs:
+Operations window
   Pipeline     every stage of ``python -m solarflare pipeline`` and its state
-  Training     the run being trained (or the last one): epochs, losses, gradients
-  Flare Watch  the frozen model's alerts replayed day by day
+  Training     the run being trained: tiles, four charts, the network diagram
+  Machine      GPU, CPU, memory, disk and training throughput, last 3 minutes
+  Terminal and watchdog
+
+Flare Watch window
+  The frozen model's alerts replayed day by day, with the flares of the day and
+  the lead times over the whole replay. It opens beside the operations window,
+  so the two can sit on one screen each.
 
 Actions start one job at a time through dashboard/job_runner.py with the
-installed Python, detached: closing this window never stops a job. Paths come
-from config/project.toml, as for every other command in the project.
+installed Python, detached: closing a window never stops a job. Paths come from
+config/project.toml, as for every other command in the project.
 """
 
 from __future__ import annotations
@@ -32,16 +38,18 @@ from .common import (AMBER, DOWNLOADS, FAINT, GREEN, GROUND, LINE, MONO, MUTED, 
                      fmt_dur, tail)
 from .flarewatch import FlareWatchTab
 from .pipeline_view import PipelineTab
+from .system import SystemPanel
 from .training import TrainingTab, best_index, run_label, runs
 
 ERROR_RE = re.compile(r"Traceback|Error\b|error:|CUDA out of memory|MemoryError|FAILED|Killed")
 #: the line worth quoting: the exception itself, not the "job FAILED" footer
 EXC_RE = re.compile(r"^\s*\w*(Error|Exception|Interrupt)\b.*:|CUDA out of memory|MemoryError")
 TITLE = "SoLEXHEL-Net · Mission Console"
+WATCH_TITLE = "SoLEXHEL-Net · Flare Watch"
 
 
 class Poller(threading.Thread):
-    """Slow checks off the UI thread: nvidia-smi every 5 s, downloads every 30 s."""
+    """Slow checks off the UI thread: nvidia-smi every second, downloads every 30 s."""
 
     def __init__(self):
         super().__init__(daemon=True)
@@ -61,14 +69,14 @@ class Poller(threading.Thread):
                             "temp": float(f[4]), "power": float(f[5]) if f[5] not in ("[N/A]", "") else None}
             except (OSError, subprocess.SubprocessError, IndexError, ValueError):
                 self.gpu = None
-            if self._n % 6 == 0:
+            if self._n % 30 == 0:
                 try:
                     now = time.time()
                     self.downloading = any(now - p.stat().st_mtime < 180 for p in DOWNLOADS.glob("**/*.part"))
                 except OSError:
                     self.downloading = False
             self._n += 1
-            time.sleep(REFRESH_MS / 1000)
+            time.sleep(max(REFRESH_MS / 1000, 1.0))
 
 
 def newest_log(run: Path | None) -> Path | None:
@@ -81,39 +89,75 @@ def newest_log(run: Path | None) -> Path | None:
     return max(logs, key=lambda p: p.stat().st_mtime) if logs else None
 
 
+def dark_combobox(root) -> None:
+    style = ttk.Style(root)
+    style.theme_use("clam")
+    style.configure("Run.TCombobox", fieldbackground=PANEL, background=PANEL, foreground=TEXT,
+                    arrowcolor=MUTED, bordercolor=LINE, lightcolor=PANEL, darkcolor=PANEL)
+    style.map("Run.TCombobox", fieldbackground=[("readonly", PANEL)], foreground=[("readonly", TEXT)],
+              selectbackground=[("readonly", PANEL)], selectforeground=[("readonly", TEXT)])
+    root.option_add("*TCombobox*Listbox.background", PANEL)
+    root.option_add("*TCombobox*Listbox.foreground", TEXT)
+
+
+class WatchWindow(tk.Toplevel):
+    """The second screen: Flare Watch on its own, so it can live on another monitor."""
+
+    def __init__(self, master):
+        super().__init__(master, bg=GROUND)
+        self.title(WATCH_TITLE)
+        self.configure(bg=GROUND)
+        self.minsize(820, 700)
+        head = tk.Frame(self, bg=GROUND)
+        head.pack(fill="x", padx=16, pady=(12, 6))
+        left = tk.Frame(head, bg=GROUND)
+        left.pack(side="left")
+        tk.Label(left, text="ADITYA-L1  ·  SOLEXS + HEL1OS  ·  ALERTS", bg=GROUND, fg=MUTED,
+                 font=SMALL).pack(anchor="w")
+        tk.Label(left, text="Flare Watch", bg=GROUND, fg=TEXT, font=("Segoe UI Semibold", 16)).pack(anchor="w")
+        self.clock = tk.Label(head, text="", bg=GROUND, fg=MUTED, font=MONO)
+        self.clock.pack(side="right")
+        self.tab = FlareWatchTab(self)
+        self.tab.pack(fill="both", expand=True, padx=16, pady=(0, 12))
+        self.protocol("WM_DELETE_WINDOW", self.withdraw)
+
+
 class Console(tk.Tk):
-    def __init__(self, run: Path | None, tab: str = "pipeline"):
+    def __init__(self, run: Path | None, tab: str = "pipeline", with_watch: bool = True):
         super().__init__()
         self.title(TITLE)
         self.configure(bg=GROUND)
-        self.geometry("1560x990")
-        self.minsize(1280, 820)
+        self.minsize(1020, 720)
         self.fixed_run = run
         self.poller = Poller()
         self.poller.start()
         self._term_tab = "job"
         self._gpu_idle = 0
         self._pipeline_state: dict = {}
-        self._style()
+        dark_combobox(self)
         self._build()
         self.show_tab(tab)
+        self.watch = WatchWindow(self)
+        self._place(with_watch)
         self.bind("<r>", lambda e: self.refresh(reschedule=False))
         self.after(300, self.refresh)
 
-    # ---- layout -------------------------------------------------------------------
-    def _style(self):
-        style = ttk.Style(self)
-        style.theme_use("clam")
-        style.configure("Run.TCombobox", fieldbackground=PANEL, background=PANEL, foreground=TEXT,
-                        arrowcolor=MUTED, bordercolor=LINE, lightcolor=PANEL, darkcolor=PANEL)
-        style.map("Run.TCombobox", fieldbackground=[("readonly", PANEL)], foreground=[("readonly", TEXT)],
-                  selectbackground=[("readonly", PANEL)], selectforeground=[("readonly", TEXT)])
-        self.option_add("*TCombobox*Listbox.background", PANEL)
-        self.option_add("*TCombobox*Listbox.foreground", TEXT)
+    def _place(self, with_watch: bool) -> None:
+        """Side by side, both fully on this screen; drag either onto a second monitor."""
+        sw, sh = self.winfo_screenwidth(), self.winfo_screenheight()
+        h = max(int(sh * 0.92) - 40, 700)
+        gap, edge = 8, 8
+        w = max(min(int(sw * 0.55), sw - 820 - gap - 2 * edge), 1020)
+        ww = max(sw - w - gap - 2 * edge, 820)
+        self.geometry(f"{w}x{h}+{edge}+0")
+        self.watch.geometry(f"{ww}x{h}+{w + gap + edge}+0")
+        if not with_watch:
+            self.watch.withdraw()
 
+    # ---- layout -------------------------------------------------------------------
     def _build(self):
         top = tk.Frame(self, bg=GROUND)
-        top.pack(fill="x", padx=18, pady=(14, 6))
+        top.pack(fill="x", padx=16, pady=(12, 6))
         left = tk.Frame(top, bg=GROUND)
         left.pack(side="left")
         tk.Label(left, text="ADITYA-L1  ·  SOLEXS + HEL1OS  ·  FLARE NOWCAST & FORECAST", bg=GROUND, fg=MUTED,
@@ -127,13 +171,13 @@ class Console(tk.Tk):
         row.pack(anchor="e", pady=(4, 0))
         tk.Label(row, text="Training run", bg=GROUND, fg=MUTED, font=UI).pack(side="left", padx=(0, 6))
         self.run_var = tk.StringVar(value="Follow latest")
-        self.run_box = ttk.Combobox(row, textvariable=self.run_var, width=30, state="readonly",
+        self.run_box = ttk.Combobox(row, textvariable=self.run_var, width=28, state="readonly",
                                     style="Run.TCombobox", font=UI)
         self.run_box.pack(side="left")
         self.run_box.bind("<<ComboboxSelected>>", lambda e: self.refresh(reschedule=False))
 
         bar = tk.Frame(self, bg=GROUND)
-        bar.pack(fill="x", padx=18, pady=(2, 10))
+        bar.pack(fill="x", padx=16, pady=(2, 8))
         self.btns = {}
         for key, text, cmd, fg in (
                 ("pipeline", "Run full pipeline", self.act_pipeline, TEAL),
@@ -143,46 +187,52 @@ class Console(tk.Tk):
                 ("cache", "Update cache", self.act_cache, TEXT),
                 ("tests", "Run tests", self.act_tests, TEXT)):
             b = flat_button(bar, text, cmd, fg)
-            b.pack(side="left", padx=(0, 8))
+            b.pack(side="left", padx=(0, 6))
             self.btns[key] = b
         self.btns["stop"] = flat_button(bar, "Stop job", self.act_stop, RED)
-        self.btns["stop"].pack(side="left", padx=(16, 8))
-        flat_button(bar, "Open outputs", lambda: os.startfile(OUTPUTS if OUTPUTS.exists() else ROOT), MUTED).pack(
-            side="left")
-        flat_button(bar, "Open results", self.act_results, MUTED).pack(side="left", padx=(8, 0))
-        self.job_label = tk.Label(bar, text="", bg=GROUND, fg=MUTED, font=UI)
-        self.job_label.pack(side="right")
+        self.btns["stop"].pack(side="left", padx=(12, 6))
+        flat_button(bar, "Flare Watch ⧉", self.show_watch, STEEL).pack(side="left", padx=(0, 6))
+        flat_button(bar, "Outputs", lambda: os.startfile(OUTPUTS if OUTPUTS.exists() else ROOT), MUTED).pack(
+            side="left", padx=(0, 6))
+        flat_button(bar, "Results", self.act_results, MUTED).pack(side="left")
+        jobrow = tk.Frame(self, bg=GROUND)
+        jobrow.pack(fill="x", padx=16, pady=(0, 6))
+        self.job_label = tk.Label(jobrow, text="", bg=GROUND, fg=MUTED, font=UI, anchor="w")
+        self.job_label.pack(side="left")
 
         body = tk.Frame(self, bg=GROUND)
-        body.pack(fill="both", expand=True, padx=18)
-        body.grid_columnconfigure(0, weight=3, uniform="b")
-        body.grid_columnconfigure(1, weight=2, uniform="b")
+        body.pack(fill="both", expand=True, padx=16)
+        body.grid_columnconfigure(0, weight=13, uniform="b")
+        body.grid_columnconfigure(1, weight=7, uniform="b")
         body.grid_rowconfigure(0, weight=1)
 
         main = tk.Frame(body, bg=GROUND)
         main.grid(row=0, column=0, sticky="nsew")
         strip = tk.Frame(main, bg=GROUND)
-        strip.pack(fill="x", pady=(0, 8))
+        strip.pack(fill="x", pady=(0, 6))
         self.tab_labels = {}
-        for key, text in (("pipeline", "Pipeline"), ("training", "Training"), ("watch", "Flare Watch")):
+        for key, text in (("pipeline", "Pipeline"), ("training", "Training")):
             lab = tk.Label(strip, text=text, bg=GROUND, fg=MUTED, font=("Segoe UI Semibold", 11), cursor="hand2",
                            padx=2)
             lab.pack(side="left", padx=(0, 18))
             lab.bind("<Button-1>", lambda e, k=key: self.show_tab(k))
             self.tab_labels[key] = lab
-        self.tab_rule = tk.Frame(main, bg=LINE, height=1)
-        self.tab_rule.pack(fill="x", pady=(0, 10))
+        tk.Frame(main, bg=LINE, height=1).pack(fill="x", pady=(0, 10))
         holder = tk.Frame(main, bg=GROUND)
         holder.pack(fill="both", expand=True)
-        self.tabs = {"pipeline": PipelineTab(holder), "training": TrainingTab(holder), "watch": FlareWatchTab(holder)}
+        self.tabs = {"pipeline": PipelineTab(holder), "training": TrainingTab(holder)}
 
         side = tk.Frame(body, bg=GROUND)
-        side.grid(row=0, column=1, sticky="nsew", padx=(14, 0))
+        side.grid(row=0, column=1, sticky="nsew", padx=(12, 0))
         side.grid_columnconfigure(0, weight=1)
-        side.grid_rowconfigure(0, weight=3)
-        side.grid_rowconfigure(1, weight=2)
+        side.grid_rowconfigure(0, weight=0)
+        side.grid_rowconfigure(1, weight=3)
+        side.grid_rowconfigure(2, weight=2)
+        self.system = SystemPanel(side)
+        self.system.grid(row=0, column=0, sticky="nsew")
+
         term = tk.Frame(side, bg=PANEL, highlightthickness=1, highlightbackground=LINE)
-        term.grid(row=0, column=0, sticky="nsew")
+        term.grid(row=1, column=0, sticky="nsew", pady=(10, 0))
         tabs = tk.Frame(term, bg=PANEL)
         tabs.pack(fill="x", padx=10, pady=(7, 0))
         tk.Label(tabs, text="TERMINAL", bg=PANEL, fg=MUTED, font=SMALL).pack(side="left", padx=(2, 10))
@@ -201,17 +251,17 @@ class Console(tk.Tk):
             self.log.tag_configure(tag, foreground=col)
 
         watch = tk.Frame(side, bg=PANEL, highlightthickness=1, highlightbackground=LINE)
-        watch.grid(row=1, column=0, sticky="nsew", pady=(10, 0))
-        tk.Label(watch, text="WATCHDOG  ·  checked every 5 s", bg=PANEL, fg=MUTED, font=SMALL).pack(
+        watch.grid(row=2, column=0, sticky="nsew", pady=(10, 0))
+        tk.Label(watch, text="WATCHDOG  ·  checked every second", bg=PANEL, fg=MUTED, font=SMALL).pack(
             anchor="w", padx=12, pady=(9, 0))
-        self.watch = tk.Text(watch, bg=PANEL, fg=TEXT, font=UI, relief="flat", highlightthickness=0,
-                             wrap="word", height=6)
-        self.watch.pack(fill="both", expand=True, padx=10, pady=(4, 10))
+        self.watchdog = tk.Text(watch, bg=PANEL, fg=TEXT, font=UI, relief="flat", highlightthickness=0,
+                                wrap="word", height=6)
+        self.watchdog.pack(fill="both", expand=True, padx=10, pady=(4, 10))
         for tag, col in (("ALERT", RED), ("WARN", AMBER), ("INFO", STEEL), ("OK", GREEN)):
-            self.watch.tag_configure(tag, foreground=col, font=UI_B)
+            self.watchdog.tag_configure(tag, foreground=col, font=UI_B)
 
         self.foot = tk.Label(self, text="", bg=GROUND, fg=FAINT, font=SMALL, anchor="w")
-        self.foot.pack(fill="x", padx=18, pady=(8, 10), anchor="w")
+        self.foot.pack(fill="x", padx=16, pady=(8, 10), anchor="w")
         self._switch_term("job", refresh=False)
 
     def show_tab(self, key: str):
@@ -220,6 +270,10 @@ class Console(tk.Tk):
             self.tab_labels[k].config(fg=TEXT if k == key else MUTED)
         self.tabs[key].pack(fill="both", expand=True)
         self._tab = key
+
+    def show_watch(self):
+        self.watch.deiconify()
+        self.watch.lift()
 
     def _switch_term(self, key: str, refresh: bool = True):
         self._term_tab = key
@@ -355,18 +409,21 @@ class Console(tk.Tk):
 
     def _refresh(self):
         now = time.time()
-        self.clock.config(text=datetime.now(UTC).strftime("%Y-%m-%d  %H:%M:%S UTC"))
+        stamp = datetime.now(UTC).strftime("%Y-%m-%d  %H:%M:%S UTC")
+        self.clock.config(text=stamp)
+        self.watch.clock.config(text=stamp)
         _, job, job_running = jobs.job_running()
         self._update_job_bar(job, job_running)
         self._pipeline_state = self.tabs["pipeline"].refresh()
         run = self.current_run()
         live, hist, status, cfg = self.tabs["training"].refresh(run, now, self.poller.gpu, job_running)
-        self.tabs["watch"].refresh()
+        self.system.refresh(self.poller.gpu, live, now)
+        self.watch.tab.refresh()
         self._update_terminal(run, job)
         self._update_watch(job, job_running, live, hist, status, cfg, now)
-        self.foot.config(text=f"Training tab follows {run_label(run) if run else 'nothing yet'}   ·   refresh every "
-                              "5 s   ·   R refreshes now   ·   jobs keep running if this window is closed   ·   "
-                              f"settings: config/project.toml")
+        self.foot.config(text=f"Training tab follows {run_label(run) if run else 'nothing yet'}   ·   refreshed "
+                              "every second   ·   R refreshes now   ·   jobs keep running if these windows are "
+                              "closed   ·   settings: config/project.toml")
 
     def _update_job_bar(self, job, running: bool):
         for k, b in self.btns.items():
@@ -406,7 +463,7 @@ class Console(tk.Tk):
             lp = newest_log(run)
             if lp is None:
                 p = S.outputs / "pipeline" / "logs"
-                cands = [x for x in p.glob("train*.log")] if p.is_dir() else []
+                cands = list(p.glob("train*.log")) if p.is_dir() else []
                 lp = max(cands, key=lambda x: x.stat().st_mtime) if cands else None
             label = lp.name if lp else "no training log"
             empty = "(no training log yet)"
@@ -455,6 +512,7 @@ class Console(tk.Tk):
             elif d.get("status") == "running" and job_running:
                 items.append(("OK", f"Pipeline stage '{name}' running."))
         if live and status in ("TRAINING", "VALIDATING", "STALLED"):
+            # (a finished run reports FINISHED even when its live file froze)
             lr_ = live.get("loss_running")
             if lr_ is not None and not math.isfinite(float(lr_)):
                 items.append(("ALERT", "Training loss is NaN/inf: the run is diverging. Stop it and check."))
@@ -472,7 +530,7 @@ class Console(tk.Tk):
             g = self.poller.gpu
             if g and status == "TRAINING":
                 self._gpu_idle = self._gpu_idle + 1 if g["util"] < 5 else 0
-                if self._gpu_idle >= 6:
+                if self._gpu_idle >= 30:
                     items.append(("WARN", "GPU idle for 30 s while training: data loading is the bottleneck, "
                                           "or the run is stuck."))
         g = self.poller.gpu
@@ -503,34 +561,38 @@ class Console(tk.Tk):
                 unique.append(it)
         alerts = sum(k == "ALERT" for k, _ in unique)
         self.title(("⚠ " if alerts else "") + TITLE)
-        self.watch.config(state="normal")
-        self.watch.delete("1.0", "end")
+        self.watchdog.config(state="normal")
+        self.watchdog.delete("1.0", "end")
         order = {"ALERT": 0, "WARN": 1, "OK": 2, "INFO": 3}
         for kind, msg in sorted(unique, key=lambda x: order[x[0]]):
-            self.watch.insert("end", f"{kind:<6}", kind)
-            self.watch.insert("end", f"{msg}\n")
-        self.watch.config(state="disabled")
+            self.watchdog.insert("end", f"{kind:<6}", kind)
+            self.watchdog.insert("end", f"{msg}\n")
+        self.watchdog.config(state="disabled")
 
 
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--run", default=None, help="training run to follow, e.g. outputs/model")
-    ap.add_argument("--tab", default="pipeline", choices=("pipeline", "training", "watch"))
+    ap.add_argument("--tab", default="pipeline", choices=("pipeline", "training"))
+    ap.add_argument("--no-watch", action="store_true", help="do not open the Flare Watch window")
     ap.add_argument("--snapshot", default=None, help="save a screenshot after the first refresh and exit")
     ap.add_argument("--selftest", default=None, metavar="JSON",
-                    help="build the window hidden, refresh once, write what it shows to JSON and exit")
+                    help="build the windows hidden, refresh once, write what they show to JSON and exit")
     args = ap.parse_args()
-    app = Console(Path(args.run).resolve() if args.run else None, args.tab)
+    app = Console(Path(args.run).resolve() if args.run else None, args.tab, not args.no_watch)
     if args.selftest:
         import json
 
         app.withdraw()
+        app.watch.withdraw()
         app.update()
         app._refresh()
         Path(args.selftest).write_text(json.dumps({
             "root": str(ROOT), "outputs": str(OUTPUTS), "footer": app.foot.cget("text"),
-            "pipeline": app.tabs["pipeline"].head.cget("text"), "watchdog": app.watch.get("1.0", "end").strip(),
-            "flare_watch_days": len(app.tabs["watch"].days)}, indent=1), encoding="utf-8")
+            "pipeline": app.tabs["pipeline"].head.cget("text"), "watchdog": app.watchdog.get("1.0", "end").strip(),
+            "training": app.tabs["training"].tiles["status"].value.cget("text"),
+            "machine": app.system.disks.cget("text"),
+            "flare_watch_days": len(app.watch.tab.days)}, indent=1), encoding="utf-8")
         app.destroy()
         return
     if args.snapshot:

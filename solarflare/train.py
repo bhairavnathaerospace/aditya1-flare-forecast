@@ -212,6 +212,7 @@ def train(cfg: Config, prep: Prepared | None = None, verbose: bool = True) -> di
     t0 = time.time()
 
     for epoch in range(cfg.train.epochs):
+        t_epoch = time.time()
         model.train()
         run: dict[str, float] = {}
         n_batches = 0
@@ -247,7 +248,7 @@ def train(cfg: Config, prep: Prepared | None = None, verbose: bool = True) -> di
         # Selection on a trailing mean of the score: one lucky epoch on a noisy
         # head can neither end the run early nor be saved as "best".
         smoothed = smoothed_score(history, score, int(getattr(cfg.train, "select_smooth_epochs", 1)))
-        rec = {"epoch": epoch, "lr": sched.get_last_lr()[0],
+        rec = {"epoch": epoch, "lr": sched.get_last_lr()[0], "seconds": round(time.time() - t_epoch, 1),
                **{f"train_{k_}": v for k_, v in run.items()}, **vm,
                "score": score, "score_smoothed": smoothed}
         history.append(rec)

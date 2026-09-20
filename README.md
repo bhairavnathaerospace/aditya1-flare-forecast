@@ -203,24 +203,34 @@ now, flux at each horizon, occurrence within 15/30/60 min, and peak size and tim
 
 ## The console
 
-`Training Console.exe` in the project folder (or `pythonw dashboard/mission_control.pyw`) is a
-desktop window that refreshes every 5 s.
+`Training Console.exe` in the project folder (or `pythonw dashboard/mission_control.pyw`) opens **two
+windows**, both refreshed every second, so they can sit on one screen each:
 
-- **Pipeline:** every stage with its state (done, running, failed, needs redoing) and its duration.
-- **Training:** epoch progress, losses, validation skill, GPU, and a diagram of the network lit by
-  gradient size per part.
-- **Flare Watch:** the frozen model replayed one UTC day at a time. It shows three panels:
-  - SoLEXS flux in GOES units, with GOES for comparison and the GOES flare list;
-  - the calibrated flare probability, with the C alert;
-  - the M signal, with the M alert.
+**Operations**
+- *Pipeline*: every stage with its state (done, running, failed, needs redoing) and duration.
+- *Training*: eight tiles (status, epoch, batch, elapsed, time left, best score, epochs since the
+  best one, throughput), four charts — the loss and each head's share of it, validation skill,
+  learning rate against epoch time, and the gradient reaching each part of the network — plus the
+  network diagram and this epoch's live numbers.
+- *Machine*: GPU use, GPU memory, GPU temperature, CPU, memory and training throughput, each traced
+  over the last three minutes, with free space on both drives.
+- Terminal (job, stage and training logs) and the watchdog: failed stages, a stalled or diverging
+  run, an idle or hot GPU, low disk.
+- Actions: run the full pipeline, redo a stage, check or extract data, update the cache, run the
+  tests. Jobs run detached (closing a window does not stop them) and keep the laptop awake.
 
-  Each value is drawn at the minute it became known. Days are marked as validation or test.
-- **Actions:** run the full pipeline, redo a stage, check or extract data, update the cache, run the
-  tests. Jobs run detached (closing the window does not stop them) and keep the laptop awake.
-- **Terminal and watchdog:** job, stage and training logs. The watchdog flags failed stages, a
-  stalled or diverging run, an idle or hot GPU, and low disk.
+**Flare Watch** — the frozen model replayed one UTC day at a time:
+- SoLEXS flux in GOES units, with GOES for comparison and the GOES flare list;
+- the calibrated flare probability, shaded where the C alert is on;
+- the M signal, shaded where the M alert is on;
+- how much of each window HEL1OS was watching;
+- beside them: the alert state at the last minute of the replay, every flare of that day with the
+  lead its alerts gave, and the lead times over the whole replay.
 
-Rebuild the exe after changing `dashboard/`:
+Each value is drawn at the minute it became known, and days are marked as validation or test.
+
+`--selftest out.json` builds both windows hidden, refreshes once and writes what they show, which is
+how to check a packaged build without opening anything. Rebuild the exe after changing `dashboard/`:
 
 ```bash
 python -m PyInstaller --onefile --windowed --name "Training Console" --icon dashboard/console.ico --paths . --paths dashboard --collect-submodules console --exclude-module torch --exclude-module scipy --exclude-module pandas --exclude-module sklearn --exclude-module astropy dashboard/mission_control.pyw

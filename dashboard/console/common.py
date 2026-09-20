@@ -33,7 +33,7 @@ S = load_settings(str(ROOT / "config" / "project.toml"), root=str(ROOT))
 OUTPUTS = S.outputs
 JOBS = OUTPUTS / "jobs"
 DOWNLOADS = S.data_root / "pradan1.issdc.gov.in" / "al1" / "protected" / "downloadData"
-REFRESH_MS = 5000
+REFRESH_MS = 1000                          # the console reads the files every second
 NO_WINDOW = 0x08000000                     # CREATE_NO_WINDOW
 NEW_GROUP = 0x00000200                     # CREATE_NEW_PROCESS_GROUP
 TEST_SUITES = ("test_correctness", "test_robustness", "test_scale", "test_extract", "test_hel1os",
@@ -55,7 +55,58 @@ UI = ("Segoe UI", 9)
 UI_B = ("Segoe UI Semibold", 9)
 SMALL = ("Segoe UI", 8)
 MONO = ("Consolas", 10)
-MONO_BIG = ("Consolas", 17)
+MONO_BIG = ("Consolas", 15)
+
+
+# ---- machine load (no extra dependency: Windows APIs through ctypes) -------------
+
+class _MemStatus(ctypes.Structure):
+    _fields_ = [("dwLength", ctypes.c_ulong), ("dwMemoryLoad", ctypes.c_ulong),
+                ("ullTotalPhys", ctypes.c_ulonglong), ("ullAvailPhys", ctypes.c_ulonglong),
+                ("ullTotalPageFile", ctypes.c_ulonglong), ("ullAvailPageFile", ctypes.c_ulonglong),
+                ("ullTotalVirtual", ctypes.c_ulonglong), ("ullAvailVirtual", ctypes.c_ulonglong),
+                ("ullAvailExtendedVirtual", ctypes.c_ulonglong)]
+
+
+class _Filetime(ctypes.Structure):
+    _fields_ = [("lo", ctypes.c_ulong), ("hi", ctypes.c_ulong)]
+
+
+def _ft(x) -> float:
+    return (x.hi << 32) | x.lo
+
+
+class CpuLoad:
+    """Whole-machine CPU use between calls, from GetSystemTimes."""
+
+    def __init__(self):
+        self.prev = None
+
+    def read(self) -> float | None:
+        if sys.platform != "win32":
+            return None
+        idle, kernel, user = _Filetime(), _Filetime(), _Filetime()
+        if not ctypes.windll.kernel32.GetSystemTimes(ctypes.byref(idle), ctypes.byref(kernel),
+                                                     ctypes.byref(user)):
+            return None
+        now = (_ft(idle), _ft(kernel), _ft(user))
+        prev, self.prev = self.prev, now
+        if prev is None:
+            return None
+        di, dk, du = (n - p for n, p in zip(now, prev))
+        busy = dk + du - di
+        return 100.0 * busy / (dk + du) if (dk + du) > 0 else None
+
+
+def memory() -> tuple[float, float] | None:
+    """(used GB, total GB) of physical memory."""
+    if sys.platform != "win32":
+        return None
+    m = _MemStatus()
+    m.dwLength = ctypes.sizeof(_MemStatus)
+    if not ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(m)):
+        return None
+    return (m.ullTotalPhys - m.ullAvailPhys) / 1e9, m.ullTotalPhys / 1e9
 
 
 def read_json(p: Path):
@@ -110,11 +161,11 @@ class Tile(tk.Frame):
 
     def __init__(self, parent, label: str, bar: bool = False):
         super().__init__(parent, bg=PANEL, highlightthickness=1, highlightbackground=LINE)
-        tk.Label(self, text=label.upper(), bg=PANEL, fg=MUTED, font=SMALL).pack(anchor="w", padx=12, pady=(9, 0))
+        tk.Label(self, text=label.upper(), bg=PANEL, fg=MUTED, font=SMALL).pack(anchor="w", padx=12, pady=(6, 0))
         self.value = tk.Label(self, text="--", bg=PANEL, fg=TEXT, font=MONO_BIG)
         self.value.pack(anchor="w", padx=12)
         self.sub = tk.Label(self, text="", bg=PANEL, fg=MUTED, font=UI)
-        self.sub.pack(anchor="w", padx=12, pady=(0, 4 if bar else 10))
+        self.sub.pack(anchor="w", padx=12, pady=(0, 3 if bar else 7))
         self.bar = None
         if bar:
             self.bar = tk.Canvas(self, height=4, bg=LINE, highlightthickness=0)
@@ -128,6 +179,60 @@ class Tile(tk.Frame):
             w = self.bar.winfo_width()
             if frac is not None and w > 1:
                 self.bar.create_rectangle(0, 0, int(w * min(max(frac, 0), 1)), 4, fill=TEAL, width=0)
+
+
+class Sparkline(tk.Frame):
+    """A label, a live number and a small filled trace of the last values.
+
+    Drawn on a canvas rather than with matplotlib: it is redrawn every second."""
+
+    def __init__(self, parent, label: str, unit: str = "", span: int = 180, lo: float = 0.0,
+                 hi: float | None = 100.0, color: str = TEAL, height: int = 34):
+        super().__init__(parent, bg=PANEL)
+        self.unit, self.span, self.lo, self.hi, self.color = unit, span, lo, hi, color
+        self.values: list[float] = []
+        top = tk.Frame(self, bg=PANEL)
+        top.pack(fill="x")
+        tk.Label(top, text=label.upper(), bg=PANEL, fg=MUTED, font=SMALL).pack(side="left")
+        self.value = tk.Label(top, text="--", bg=PANEL, fg=TEXT, font=("Consolas", 9))
+        self.value.pack(side="right")
+        self.canvas = tk.Canvas(self, height=height, bg=PANEL, highlightthickness=0)
+        self.canvas.pack(fill="x")
+
+    def push(self, v: float | None, text: str | None = None) -> None:
+        if v is not None and v == v:
+            self.values.append(float(v))
+            del self.values[:-self.span]
+        self.value.config(text=text if text is not None else ("--" if v is None else f"{v:.0f}{self.unit}"),
+                          fg=TEXT if v is not None else FAINT)
+        self._draw()
+
+    def _draw(self) -> None:
+        c = self.canvas
+        c.delete("all")
+        w, h = max(c.winfo_width(), 60), max(int(c["height"]), 10)
+        if not self.values:
+            return
+        lo = self.lo if self.lo is not None else min(self.values)
+        hi = self.hi if self.hi is not None else max(max(self.values), lo + 1e-9)
+        if hi <= lo:
+            hi = lo + 1e-9
+        n = len(self.values)
+        # while the history is short, spread it over the whole width rather than
+        # leaving a bare strip: the trace gains resolution instead of crawling in
+        step = w / max(min(n, self.span) - 1, 1) if n > 1 else w
+        x0 = 0.0
+        pts = []
+        for i, v in enumerate(self.values):
+            y = h - 2 - (h - 4) * min(max((v - lo) / (hi - lo), 0.0), 1.0)
+            pts += [x0 + i * step, y]
+        c.create_line(0, h - 2, w, h - 2, fill=LINE)
+        if len(pts) >= 4:
+            c.create_polygon([pts[0], h - 2] + pts + [pts[-2], h - 2], fill=blend(PANEL, self.color, 0.22),
+                             outline="")
+            c.create_line(pts, fill=self.color, width=1.4)
+        elif pts:
+            c.create_oval(pts[0] - 1, pts[1] - 1, pts[0] + 1, pts[1] + 1, fill=self.color, outline="")
 
 
 def flat_button(parent, text, command, fg=TEXT):
@@ -156,7 +261,8 @@ def style_axes(ax, title: str = ""):
 
 
 def muted_legend(ax, **kw):
-    leg = ax.legend(frameon=False, fontsize=7, **kw)
+    kw.setdefault("fontsize", 6.5)
+    leg = ax.legend(frameon=False, **kw)
     for t in leg.get_texts():
         t.set_color(MUTED)
     return leg

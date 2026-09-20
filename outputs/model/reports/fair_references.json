@@ -1,0 +1,46 @@
+{
+  "calibration_train_only": "log10 F = -6.716 + 0.638 log10 rate (sd 0.055 dex)",
+  "n_test_windows": 113898,
+  "n_with_both_references": 105374,
+  "nowcast": {
+    "model_rmse": 0.06096981465816498,
+    "solexs_calibration_rmse": 0.06985846899750973
+  },
+  "forecast": {
+    "1min": {
+      "n": 105332,
+      "model_rmse": 0.05905649811029434,
+      "no_change_goes_rmse": 0.021767577156424522,
+      "no_change_solexs_calibrated_rmse": 0.06889606282746957,
+      "climatology_rmse": 0.524132380270521
+    },
+    "5min": {
+      "n": 105243,
+      "model_rmse": 0.08577942103147507,
+      "no_change_goes_rmse": 0.0738581120967865,
+      "no_change_solexs_calibrated_rmse": 0.09590200295307261,
+      "climatology_rmse": 0.5240707182484429
+    },
+    "15min": {
+      "n": 105050,
+      "model_rmse": 0.132257342338562,
+      "no_change_goes_rmse": 0.13449886441230774,
+      "no_change_solexs_calibrated_rmse": 0.1508561782848509,
+      "climatology_rmse": 0.5239179682796719
+    },
+    "30min": {
+      "n": 104769,
+      "model_rmse": 0.16231006383895874,
+      "no_change_goes_rmse": 0.17629334330558777,
+      "no_change_solexs_calibrated_rmse": 0.19142528194944927,
+      "climatology_rmse": 0.5237213207544473
+    },
+    "60min": {
+      "n": 104286,
+      "model_rmse": 0.1863182783126831,
+      "no_change_goes_rmse": 0.21292664110660553,
+      "no_change_solexs_calibrated_rmse": 0.22736730801884555,
+      "climatology_rmse": 0.5235799859328844
+    }
+  }
+}

@@ -1,6 +1,6 @@
 {
   "data_root": "D:\\Data",
-  "out_dir": "D:\\Deep Learning algorithm for Forecasting and Nowcasting Solar Flares using combined Soft and Hard X-ray data from Aditya-L1 (SoLEXS + HEL1OS)\\outputs\\ablations\\sharp\\xray_only",
+  "out_dir": "D:\\Deep Learning algorithm for Forecasting and Nowcasting Solar Flares using combined Soft and Hard X-ray data from Aditya-L1 (SoLEXS + HEL1OS)\\outputs\\ablations\\sharp\\with_sharp",
   "cache_dir": "D:\\Deep Learning algorithm for Forecasting and Nowcasting Solar Flares using combined Soft and Hard X-ray data from Aditya-L1 (SoLEXS + HEL1OS)\\cache",
   "pre": {
     "solexs_energy_scale": "sarwade2025",
@@ -12,7 +12,7 @@
     "goes_dir": "D:\\Data\\goes",
     "exclude_intervals": "D:\\Deep Learning algorithm for Forecasting and Nowcasting Solar Flares using combined Soft and Hard X-ray data from Aditya-L1 (SoLEXS + HEL1OS)\\outputs\\quality\\solexs_duplicates.json",
     "hel1os_smooth_s": 60.0,
-    "sharp_dir": "",
+    "sharp_dir": "D:\\Data\\sharp",
     "goes_min_class": "C1.0",
     "goes_exceed_class": "M1.0",
     "dt_seconds": 20.0,

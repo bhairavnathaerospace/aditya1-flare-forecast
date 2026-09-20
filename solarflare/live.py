@@ -21,9 +21,27 @@ GROUPS = ("soft_enc", "hard_enc", "fusion", "trunk", "pool", "head_phase", "head
 
 
 def write_json_atomic(path: Path, obj) -> None:
+    """Write JSON through a temporary file.
+
+    On Windows ``os.replace`` fails while another process has the destination
+    open -- the console reads these files every second -- so the swap is retried
+    briefly and then done in place rather than giving up: a status file that
+    stops updating is worse than one caught mid-write, which the reader simply
+    skips until the next tick."""
+    text = json.dumps(obj, indent=1, default=float)
     tmp = path.with_name(path.name + ".tmp")
-    tmp.write_text(json.dumps(obj, indent=1, default=float), encoding="utf-8")
-    os.replace(tmp, path)
+    tmp.write_text(text, encoding="utf-8")
+    for i in range(5):
+        try:
+            os.replace(tmp, path)
+            return
+        except OSError:
+            time.sleep(0.02 * (i + 1))
+    try:
+        path.write_text(text, encoding="utf-8")
+    finally:
+        with contextlib.suppress(OSError):
+            tmp.unlink()
 
 
 def grad_norms(model) -> dict[str, float]:
@@ -47,7 +65,9 @@ class LiveStatus:
         self.every_s = every_s
         self.enabled = True
         self._last = 0.0
+        self._fails = 0
         self.t0 = time.time()
+        self._epoch_mark = self.t0
         self.state = {"run": Path(out_dir).name, "status": "training", "device": str(device),
                       "params": int(params), "epochs_total": int(epochs), "epoch": 0,
                       "batch": 0, "batches": int(batches), "started_unix": self.t0,
@@ -70,8 +90,12 @@ class LiveStatus:
             self.state["elapsed_s"] = round(now - self.t0, 1)
             write_json_atomic(self.path, self.state)
             self._last = now
+            self._fails = 0
         except Exception:                   # never let a status file stop training
-            self.enabled = False
+            # one locked file (a reader had it open) must not kill the live view
+            # for the rest of the run; only a persistent fault switches it off
+            self._fails = getattr(self, "_fails", 0) + 1
+            self.enabled = self._fails < 50
 
     def batch(self, epoch: int, batch: int, lr: float, running: dict[str, float], n: int,
               grads: dict[str, float] | None = None) -> None:
@@ -88,8 +112,12 @@ class LiveStatus:
         self._write(force=True)
 
     def epoch_done(self, history: list[dict], best_epoch: int, best_score: float) -> None:
+        now = time.time()
         self.state.update({"status": "training", "epochs_done": len(history), "best_epoch": best_epoch,
-                           "best_score": best_score, "last_epoch_s": round(time.time() - self.t0, 1)})
+                           "best_score": best_score,
+                           "last_epoch_s": round(now - self._epoch_mark, 1),   # this epoch, not the run
+                           "elapsed_s": round(now - self.t0, 1)})
+        self._epoch_mark = now
         if self.enabled:
             with contextlib.suppress(Exception):
                 write_json_atomic(self.hist_path, history)

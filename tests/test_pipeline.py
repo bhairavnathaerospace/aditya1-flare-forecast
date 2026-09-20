@@ -324,6 +324,32 @@ def test_choose_inputs():
             check("the previous outputs/model is moved aside, not deleted", len(moved) == 1)
 
 
+def test_live_status_survives_a_reader():
+    """The console reads live.json every second; on Windows that blocks the
+    atomic replace, and one failure used to switch the live view off for the
+    rest of the run (a 5 h training showed epoch 7 throughout)."""
+    from solarflare.live import LiveStatus, write_json_atomic
+
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp = Path(tmp)
+        p = tmp / "live.json"
+        write_json_atomic(p, {"epoch": 1})
+        with p.open("r", encoding="utf-8") as holder:     # a reader holding it open
+            holder.read()
+            write_json_atomic(p, {"epoch": 2})
+        check("a held-open file is still written", json.loads(p.read_text())["epoch"] == 2)
+        check("no .tmp left behind", not list(tmp.glob("*.tmp")))
+
+        live = LiveStatus(tmp, epochs=2, batches=10, params=1, device="cpu", every_s=0.0)
+        live.path = tmp / "nowhere" / "deep" / "live.json"     # writes fail from here on
+        for _ in range(5):
+            live._write(force=True)
+        check("a few failures do not switch the live view off", live.enabled)
+        for _ in range(60):
+            live._write(force=True)
+        check("a persistent fault does", not live.enabled)
+
+
 def test_summary_without_products():
     from solarflare.summary import build
 

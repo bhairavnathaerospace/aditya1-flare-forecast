@@ -1,0 +1,17 @@
+{
+  "decided_utc": "2026-09-20 16:06:10",
+  "criterion": "validation score (smoothed) gain >= 0.01",
+  "xray_only": {
+    "run": "D:\\Deep Learning algorithm for Forecasting and Nowcasting Solar Flares using combined Soft and Hard X-ray data from Aditya-L1 (SoLEXS + HEL1OS)\\outputs\\ablations\\sharp\\xray_only",
+    "val_score": 0.5682,
+    "best_epoch": 44
+  },
+  "with_sharp": {
+    "run": "D:\\Deep Learning algorithm for Forecasting and Nowcasting Solar Flares using combined Soft and Hard X-ray data from Aditya-L1 (SoLEXS + HEL1OS)\\outputs\\ablations\\sharp\\with_sharp",
+    "val_score": 0.5692,
+    "best_epoch": 35
+  },
+  "gain": 0.001,
+  "use_sharp": false,
+  "copied_to": "D:\\Deep Learning algorithm for Forecasting and Nowcasting Solar Flares using combined Soft and Hard X-ray data from Aditya-L1 (SoLEXS + HEL1OS)\\outputs\\model"
+}
