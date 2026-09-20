@@ -1,0 +1,30 @@
+# Where the data lives and where results go. Every command reads this file;
+# nothing else in the code names a folder. Relative paths are relative to the
+# project folder. Point SOLARFLARE_CONFIG at another file to use a different setup.
+
+[paths]
+data_root = "D:/Data"                        # PRADAN downloads + extracted products
+goes_dir = "D:/Data/goes"                    # GOES-18 XRS flare list and 1-min flux (truth)
+sharp_dir = "D:/Data/sharp"                  # SDO/HMI SHARP monthly CSVs (scripts/download_sharp.py)
+hel1os_extracted = "D:/Data/extracted/hel1os"
+cache = "cache"                              # preprocessed products, rebuilt only for new files
+outputs = "outputs"
+
+[data]
+min_free_gb = 30                             # extraction stops before the disk goes below this
+
+[model]
+labels = "goes"                              # flare truth: GOES-18 flare list, >= goes_min_class
+goes_min_class = "C1.0"
+anchor_flux = true                           # flux heads predict "calibrated SoLEXS flux now + change"
+skip_copied_days = true                      # drop SoLEXS hours a PRADAN file repeats from the previous day
+hel1os_smooth_s = 60                         # HEL1OS arrives in readout batches; average over this before use
+select_smooth_epochs = 3                     # early stopping follows a running mean of the validation score
+early_stop_patience = 15
+balance_head_gradients = true                # clip each part of the network separately (see train.py)
+use_sharp = "auto"                           # "auto": use SHARP as network input only if the ablation says it helps
+set = []                                     # any other setting, e.g. ["train.epochs=40", "train.lr=0.001"]
+
+[pipeline]
+seeds = [1337, 7, 42]                        # for the paired soft-only vs soft+hard comparison
+sharp_min_gain = 0.01                        # SHARP stays a network input only if validation score rises this much

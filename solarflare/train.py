@@ -13,6 +13,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from .config import Config
+from .live import GROUPS, LiveStatus, grad_norms
 from .pipeline import prepare, make_loaders, resolve_device, phase_class_weights, Prepared
 from .models.net import FluxAnchor, SolexHelNet, flux_anchor, count_parameters
 from .models.losses import MultiTaskLoss
@@ -58,6 +59,28 @@ def cosine_warmup(step: int, total: int, warmup: int) -> float:
         return (step + 1) / max(warmup, 1)
     p = (step - warmup) / max(total - warmup, 1)
     return 0.5 * (1 + math.cos(math.pi * min(p, 1.0)))
+
+
+def clip_by_group(model: torch.nn.Module, max_norm: float) -> None:
+    """Clip the gradient of each network part (live.GROUPS) to ``max_norm`` separately."""
+    groups: dict[str, list[torch.nn.Parameter]] = {}
+    for name, p in model.named_parameters():
+        if p.grad is not None:
+            g = next((g for g in GROUPS if name.startswith(g)), "other")
+            groups.setdefault(g, []).append(p)
+    for params in groups.values():
+        torch.nn.utils.clip_grad_norm_(params, max_norm)
+
+
+def smoothed_score(history: list[dict], score: float, k: int) -> float:
+    """Mean of this epoch's validation score and the ``k - 1`` epochs before it.
+
+    Model selection and early stopping use this, not the raw score, so that one
+    lucky epoch on a noisy head can neither end the run early nor be saved as
+    "best" (v4: raw score peaked at epoch 5, then patience ran out)."""
+    if k <= 1 or not history:
+        return float(score)
+    return float(np.mean([h["score"] for h in history[-(k - 1):]] + [score]))
 
 
 def _to_device(batch: dict, device: torch.device) -> dict:
@@ -179,6 +202,9 @@ def train(cfg: Config, prep: Prepared | None = None, verbose: bool = True) -> di
               f"(window {cfg.steps_per_window})")
         print(f"train batches={len(tr)}  val batches={len(va)}  test batches={len(te)}")
 
+    # Status for the desktop console (dashboard/mission_control.pyw); never fatal.
+    live = LiveStatus(out_dir, epochs=cfg.train.epochs, batches=len(tr),
+                      params=count_parameters(model), device=device)
     history: list[dict] = []
     best_score = -np.inf
     best_epoch = -1
@@ -195,30 +221,40 @@ def train(cfg: Config, prep: Prepared | None = None, verbose: bool = True) -> di
             loss, parts = crit(out, b)
             opt.zero_grad(set_to_none=True)
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), cfg.train.grad_clip)
+            grads = grad_norms(model) if live.due() else None
+            if cfg.train.balance_head_gradients:
+                clip_by_group(model, cfg.train.grad_clip)
+            else:
+                torch.nn.utils.clip_grad_norm_(model.parameters(), cfg.train.grad_clip)
             opt.step()
             sched.step()
             run["loss"] = run.get("loss", 0.0) + float(loss.detach())
             for k, v in parts.items():
                 run[k] = run.get(k, 0.0) + v
             n_batches += 1
+            if grads is not None:
+                live.batch(epoch, n_batches, sched.get_last_lr()[0], run, n_batches, grads)
         for k in run:
             run[k] /= max(n_batches, 1)
 
         vm: dict[str, float] = {}
+        live.validating(epoch)
         if len(va):
             vpred = collect_predictions(model, va, device)
             vm = quick_val_metrics(vpred)
         score = selection_score(vm) if vm else -run["loss"]
 
+        # Selection on a trailing mean of the score: one lucky epoch on a noisy
+        # head can neither end the run early nor be saved as "best".
+        smoothed = smoothed_score(history, score, int(getattr(cfg.train, "select_smooth_epochs", 1)))
         rec = {"epoch": epoch, "lr": sched.get_last_lr()[0],
-               **{f"train_{k}": v for k, v in run.items()}, **vm,
-               "score": score}
+               **{f"train_{k_}": v for k_, v in run.items()}, **vm,
+               "score": score, "score_smoothed": smoothed}
         history.append(rec)
 
-        improved = score > best_score + 1e-5
+        improved = smoothed > best_score + 1e-5
         if improved:
-            best_score, best_epoch, patience = score, epoch, 0
+            best_score, best_epoch, patience = smoothed, epoch, 0
             torch.save({
                 "model": model.state_dict(),
                 "loss": crit.state_dict(),
@@ -238,6 +274,7 @@ def train(cfg: Config, prep: Prepared | None = None, verbose: bool = True) -> di
             }, ckpt_path)
         else:
             patience += 1
+        live.epoch_done(history, best_epoch, float(best_score))
 
         if verbose:
             msg = (f"ep {epoch:3d} | loss {run['loss']:.4f} | "
@@ -253,12 +290,14 @@ def train(cfg: Config, prep: Prepared | None = None, verbose: bool = True) -> di
         if patience >= cfg.train.early_stop_patience:
             if verbose:
                 print(f"early stop at epoch {epoch} (best {best_epoch})")
+            live.state["early_stopped"] = True
             break
 
     elapsed = time.time() - t0
     (out_dir / "reports").mkdir(parents=True, exist_ok=True)
     (out_dir / "reports" / "history.json").write_text(
         json.dumps(history, indent=2), encoding="utf-8")
+    live.finish()
 
     if verbose:
         print(f"\ntrained {len(history)} epochs in {elapsed:.1f}s; "

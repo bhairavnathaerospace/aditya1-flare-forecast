@@ -45,7 +45,7 @@ def build(out_dir: Path) -> Path:
     a("# Results")
     a("")
     a(f"Generated {datetime.now(UTC):%Y-%m-%d %H:%M UTC} by "
-      "`python -m solarflare.cli report`.")
+      "`python -m solarflare report`.")
     a("All numbers are on the held-out **test** split. Operating thresholds were")
     a("fitted on validation and held fixed.")
     if cfg:

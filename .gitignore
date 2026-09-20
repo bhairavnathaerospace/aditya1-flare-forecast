@@ -37,10 +37,28 @@ HLS_*/
 *.gti.gz
 *.nc
 
+# ---- Local-only folders --------------------------------------------------
+# old outputs and retired scripts, kept on this laptop only
+archive/
+# preprocessing cache, rebuilt from the raw data
+cache/
+
 # ---- Outputs -------------------------------------------------------------
-# Kept: reports (*.md, *.json), catalogues (*.csv), figures, frozen models.
-# Ignored: anything rebuilt from the raw data or re-run in minutes.
+# Kept in git: reports (*.md, *.json), catalogues (*.csv), figures and the
+# frozen model (outputs/model/forward/final). Ignored: what the pipeline
+# rebuilds from the raw data, and local run state.
 outputs/**/cache/
-outputs/leadtime/pred_*.npz
+outputs/**/checkpoints/
+outputs/alerts/pred_*.npz
+outputs/alerts/watch.npz
 outputs/**/*.log
-outputs/checkpoints/*.pt
+outputs/**/live.json
+outputs/jobs/
+outputs/pipeline/
+outputs/_dev/
+
+# Local launcher and the built console (rebuild: see README)
+*.lnk
+*.exe
+build/
+*.spec

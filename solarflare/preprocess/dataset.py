@@ -119,6 +119,14 @@ def build_segments_from_raw(soft_raw: list, hard_raw: list, cfg: Config
     horizons = [max(int(h / dt), 1) for h in cfg.win.forecast_horizons_s]
     occ_steps = [max(int(h / dt), 1) for h in cfg.win.occurrence_horizons_s]
 
+    sharp = None
+    if getattr(pre, "sharp_dir", ""):
+        from ..io.sharp import load_sharp
+        sharp = load_sharp(pre.sharp_dir)
+        if sharp is None:
+            raise FileNotFoundError(f"sharp_dir is set but holds no sharp_*.csv: {pre.sharp_dir} "
+                                    "(scripts/download_sharp.py)")
+
     soft_tl = stitch(soft_raw, dt, pre.max_stitch_gap_s)
     hard_tl = stitch(hard_raw, dt, pre.max_stitch_gap_s)
     hard_feats = [hel1os_derive(h, pre) for h in hard_tl]
@@ -130,6 +138,8 @@ def build_segments_from_raw(soft_raw: list, hard_raw: list, cfg: Config
         grid = sf.series.time_unix
         soft = np.nan_to_num(sf.series.values, nan=0.0, posinf=0.0, neginf=0.0)
         soft_mask = (sf.series.coverage > 0).astype(np.float32)
+        if sharp is not None:
+            soft = np.hstack([soft, sharp_columns(sharp, grid)]).astype(np.float32)
 
         hard = np.zeros((grid.size, max(n_hard_features, 1)), dtype=np.float32)
         hard_mask = np.zeros(grid.size, dtype=np.float32)
@@ -186,6 +196,19 @@ def build_segments_from_raw(soft_raw: list, hard_raw: list, cfg: Config
             "goes_files": truth.source_files} if truth is not None else {}),
     }
     return segments, meta
+
+
+def sharp_columns(sharp, grid: np.ndarray) -> np.ndarray:
+    """SHARP indicators for each grid time: the latest hour an operator would
+    have had (at or before t - LATENCY_S, never after), and a 'fresh' flag when
+    that hour is under 3 h older than that. Across an HMI gap the last values
+    are held, flagged stale."""
+    from ..io.sharp import LATENCY_S
+
+    t = np.asarray(grid, dtype=np.float64) - LATENCY_S
+    vals = sharp.at(t, max_age_s=np.inf)
+    fresh = np.isfinite(sharp.at(t, max_age_s=3 * 3600.0)[:, 0]).astype(np.float64)
+    return np.column_stack([np.nan_to_num(vals, nan=0.0), fresh])
 
 
 def _finish_segment(name, grid, soft, soft_mask, hard, hard_mask,

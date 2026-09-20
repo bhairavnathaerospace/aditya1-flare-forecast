@@ -1,9 +1,16 @@
-"""Command line entry points.
+"""Command line: ``python -m solarflare <command>``. Paths and model settings come
+from config/project.toml; flags override them for one run.
 
-    python -m solarflare.cli inspect     # what is in the data
-    python -m solarflare.cli train       # preprocess, train, evaluate, plot
-    python -m solarflare.cli evaluate    # re-score a saved checkpoint
-    python -m solarflare.cli predict     # run the model over an observation
+Model:     cache, inspect, train, evaluate, baselines, forecast, fusion, forward-test,
+           predict, report
+Products:  quality, catalog, catalog-figure, alerts, dayahead, references,
+           calibration-report, hel1os-value, hxr-spectra, hxr-timing, temperature,
+           onset-study
+Everything, in order:  pipeline
+
+    python -m solarflare pipeline          # the whole study into outputs/, resumable
+    python -m solarflare train             # just the network (outputs/model)
+    python -m solarflare <command> --help
 """
 
 from __future__ import annotations
@@ -18,9 +25,28 @@ from .config import Config
 from datetime import UTC
 
 
+#: analysis commands: name -> module with ``main(argv)``
+PRODUCTS = {
+    "quality": ("solarflare.quality", "find SoLEXS days that repeat the previous day"),
+    "catalog": ("solarflare.catalog.build", "master flare catalogue (SoLEXS + HEL1OS), scored against GOES"),
+    "catalog-figure": ("solarflare.catalog.figures", "overview figure of the catalogue"),
+    "alerts": ("solarflare.products.leadtime", "minute-by-minute alerts: lead time vs false alarms"),
+    "dayahead": ("solarflare.products.dayahead", "2-24 h flare forecast from X-ray activity and SHARP"),
+    "references": ("solarflare.products.references", "flux forecast vs 'no change' references"),
+    "calibration-report": ("solarflare.products.calibration_report", "probabilities before/after calibration"),
+    "hel1os-value": ("solarflare.products.hel1os_value", "the HEL1OS gain across seeds"),
+    "hxr-spectra": ("solarflare.products.hxr_spectra", "HEL1OS CZT spectral index per flare"),
+    "hxr-timing": ("solarflare.products.hxr_timing", "HEL1OS timing audit and sub-second structure"),
+    "temperature": ("solarflare.products.temperature", "SoLEXS flare temperatures"),
+    "onset-study": ("solarflare.products.onset_study", "hot onsets and the Neupert effect"),
+    "pipeline": ("solarflare.runall", "the whole study, stage by stage, resumable"),
+}
+
+
 def _add_common(p: argparse.ArgumentParser) -> None:
-    p.add_argument("--data-root", default=".", help="folder holding the mission products")
-    p.add_argument("--out-dir", default="outputs")
+    p.add_argument("--data-root", default=None, help="folder holding the mission products "
+                                                   "(default: config/project.toml)")
+    p.add_argument("--out-dir", default=None, help="run folder (default: outputs/model)")
     p.add_argument("--dt", type=float, default=None, help="grid cadence, seconds")
     p.add_argument("--window", type=float, default=None, help="input window, seconds")
     p.add_argument("--device", default=None, help="cpu / cuda / auto")
@@ -33,7 +59,7 @@ def _add_common(p: argparse.ArgumentParser) -> None:
                    choices=["sarwade2025", "legacy_linear"],
                    help="SoLEXS channel-to-energy scale (default: published "
                         "sarwade2025). Use legacy_linear only to reproduce models "
-                        "trained before the calibration fix, e.g. outputs/archive.")
+                        "trained before the calibration fix (the first archive run).")
     p.add_argument("--labels", default=None, dest="label_source", choices=["solexs", "goes"],
                    help="flare truth: GOES flare list + XRS-B flux (needs --goes-dir), "
                         "or this project's SoLEXS detector (default)")
@@ -43,15 +69,42 @@ def _add_common(p: argparse.ArgumentParser) -> None:
                    help="predict flux as calibrated SoLEXS flux now + a learned change")
     p.add_argument("--goes-min-class", default=None, dest="goes_min_class",
                    help="smallest GOES class counted as a flare (default C1.0)")
+    p.add_argument("--exclude-intervals", default=None, dest="exclude_intervals",
+                   help="JSON of SoLEXS intervals to drop (default: outputs/quality/solexs_duplicates.json)")
+    p.add_argument("--sharp", action="store_true", help="add SHARP magnetic indicators to the inputs")
+    p.add_argument("--set", action="append", default=[], metavar="SECTION.KEY=VALUE",
+                   help="override any setting, e.g. --set train.balance_head_gradients=false")
+    p.add_argument("--from-run", default=None, dest="from_run",
+                   help="start from the configuration a run was trained with (its reports/config.json)")
 
 
 def _build_cfg(args) -> Config:
-    cfg = Config(data_root=Path(args.data_root), out_dir=Path(args.out_dir))
+    """The configuration for this command. Commands that act on a trained run
+    (evaluate, freeze, predict, report, baselines) start from that run's own
+    reports/config.json, so a later change to project.toml cannot silently
+    change the features a saved model is fed; the rest start from settings."""
+    from .settings import apply_overrides, load_settings, model_config
+
+    s = load_settings()
+    run = Path(args.out_dir) if getattr(args, "out_dir", None) else s.model_dir
+    saved = run / "reports" / "config.json"
+    if getattr(args, "from_run", None):
+        cfg = Config.from_json(Path(args.from_run) / "reports" / "config.json")
+    elif getattr(args, "existing_run", False) and saved.exists():
+        cfg = Config.from_json(saved)
+        cfg.out_dir = run
+    else:
+        cfg = model_config(s, out_dir=getattr(args, "out_dir", None),
+                           sharp=True if getattr(args, "sharp", False) else None)
+    if getattr(args, "out_dir", None):
+        cfg.out_dir = Path(args.out_dir)
+    if getattr(args, "data_root", None):
+        cfg.data_root = Path(args.data_root)
     if getattr(args, "cache_dir", None):
         cfg.cache_dir = Path(args.cache_dir)
     if getattr(args, "energy_scale", None):
         cfg.pre.solexs_energy_scale = args.energy_scale
-    for name in ("label_source", "goes_dir", "goes_min_class"):
+    for name in ("label_source", "goes_dir", "goes_min_class", "exclude_intervals"):
         if getattr(args, name, None):
             setattr(cfg.pre, name, getattr(args, name))
     if getattr(args, "anchor_flux", False):
@@ -68,7 +121,7 @@ def _build_cfg(args) -> Config:
         v = getattr(args, name, None)
         if v is not None:
             setattr(cfg.train, name, v)
-    return cfg
+    return apply_overrides(cfg, getattr(args, "set", []))
 
 
 def cmd_cache(args) -> None:
@@ -235,6 +288,8 @@ def cmd_train(args) -> None:
     cfg.to_json(out / "reports" / "config.json")
 
     prep = prepare(cfg)
+    # again after prepare: it fits the flux anchor and sets the archive profile
+    cfg.to_json(out / "reports" / "config.json")
     (out / "reports").mkdir(parents=True, exist_ok=True)
     (out / "reports" / "data_meta.json").write_text(
         json.dumps(prep.meta, indent=2, default=float), encoding="utf-8")
@@ -355,11 +410,21 @@ def cmd_predict(args) -> None:
                   limit=args.limit)
 
 
-def main(argv=None) -> None:
+def main(argv=None) -> int:
+    import importlib
+    import sys
+
+    argv = list(sys.argv[1:] if argv is None else argv)
+    if argv and argv[0] in PRODUCTS:
+        sys.argv[0] = f"solarflare {argv[0]}"          # argparse names the program from this
+        mod = importlib.import_module(PRODUCTS[argv[0]][0])
+        return int(mod.main(argv[1:]) or 0)
     ap = argparse.ArgumentParser(
         prog="solarflare",
         description="Deep learning for solar flare nowcasting and forecasting "
-                    "from Aditya-L1 SoLEXS (soft X-ray) and HEL1OS (hard X-ray).")
+                    "from Aditya-L1 SoLEXS (soft X-ray) and HEL1OS (hard X-ray).",
+        epilog="analysis commands (each has --help): "
+               + "; ".join(f"{k}: {v[1]}" for k, v in PRODUCTS.items()))
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     p = sub.add_parser("cache", help="build/refresh the preprocessing cache only "
@@ -385,7 +450,7 @@ def main(argv=None) -> None:
 
     p = sub.add_parser("baselines", help="classical baselines on the same splits")
     _add_common(p)
-    p.set_defaults(func=cmd_baselines)
+    p.set_defaults(func=cmd_baselines, existing_run=True)
 
     p = sub.add_parser(
         "forecast",
@@ -428,16 +493,16 @@ def main(argv=None) -> None:
                    help="score: independent flare list (NOAA SWPC JSON, HEK JSON, or CSV)")
     p.add_argument("--min-class", default="C1.0", dest="min_class",
                    help="score: smallest GOES class counted as a flare")
-    p.set_defaults(func=cmd_forward)
+    p.set_defaults(func=cmd_forward, existing_run=True)
 
     p = sub.add_parser("report", help="render RESULTS.md from the JSON reports")
     _add_common(p)
-    p.set_defaults(func=cmd_report)
+    p.set_defaults(func=cmd_report, existing_run=True)
 
     p = sub.add_parser("evaluate", help="score a saved checkpoint")
     _add_common(p)
     p.add_argument("--checkpoint", default=None)
-    p.set_defaults(func=cmd_evaluate)
+    p.set_defaults(func=cmd_evaluate, existing_run=True)
 
     p = sub.add_parser("predict", help="stream predictions over the data")
     _add_common(p)
@@ -445,11 +510,12 @@ def main(argv=None) -> None:
     p.add_argument("--output", default=None, help="CSV path")
     p.add_argument("--limit", type=int, default=None,
                    help="max prediction steps PER SEGMENT (not in total)")
-    p.set_defaults(func=cmd_predict)
+    p.set_defaults(func=cmd_predict, existing_run=True)
 
     args = ap.parse_args(argv)
     args.func(args)
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

@@ -378,7 +378,11 @@ def solexs_feature_names(cfg: PreprocessConfig) -> list[str]:
     import warnings
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", RuntimeWarning)
-        return list(solexs_derive(empty, cfg).series.names)
+        base = list(solexs_derive(empty, cfg).series.names)
+    if getattr(cfg, "sharp_dir", ""):
+        from ..io.sharp import FEATURE_NAMES
+        base += list(FEATURE_NAMES) + ["sharp_fresh"]
+    return base
 
 
 def hel1os_feature_names(cfg: PreprocessConfig) -> list[str]:
@@ -402,11 +406,19 @@ def hel1os_derive(raw: GriddedSeries, cfg: PreprocessConfig) -> GriddedSeries:
     """
     if list(raw.names) != HEL1OS_RAW_NAMES:
         raise ValueError("HEL1OS raw series is not in the current layout; "
-                         "rebuild the cache (python -m solarflare.cli cache)")
+                         "rebuild the cache (python -m solarflare cache)")
     dt = cfg.dt_seconds
     grid = raw.time_unix
     vals = raw.values
     bg_win = max(int(cfg.background_window_s / dt), 3)
+    smooth = int(round(getattr(cfg, "hel1os_smooth_s", 0.0) / dt))
+    if smooth > 1:
+        # Readout batches: average rates (never coverage) over a trailing window.
+        vals = vals.copy()
+        cov_cols = {c for _, _, _, c in _hel1os_layout()}
+        for j in range(vals.shape[1]):
+            if j not in cov_cols:
+                vals[:, j] = _causal_mean(vals[:, j], smooth)
 
     feats: list[np.ndarray] = []
     fnames: list[str] = []

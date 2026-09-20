@@ -18,7 +18,7 @@ import torch
 from torch.utils.data import DataLoader, RandomSampler
 
 from .config import Config
-from .preprocess.cache import build_cache, index_sources, load_cached, Source
+from .preprocess.cache import build_cache, index_sources, load_cached, mask_intervals, Source
 from .preprocess.dataset import (
     build_segments_from_raw, enumerate_windows, chronological_split,
     fit_normalizer, resolve_split_mode, span_days, thin_quiet_training_windows,
@@ -64,6 +64,34 @@ def cache_dir_for(cfg: Config) -> Path:
     return Path(getattr(cfg, "cache_dir", None) or Path(cfg.out_dir) / "cache")
 
 
+def fit_flux_anchor(segments, train_end: float | None) -> dict | None:
+    """log10 GOES flux = a + b log10 SoLEXS rate, on training-period samples only.
+
+    The anchor turns the SoLEXS rate the network sees into "GOES flux now";
+    fitting it here keeps it tied to the data at hand (it was 0.062 dex on the
+    2024-2026 archive) instead of to constants from an earlier run."""
+    xs, ys = [], []
+    for s in segments:
+        if s.goes_long is None:
+            continue
+        ok = (s.soft_mask > 0) & (s.target_valid > 0) & np.isfinite(s.log_flux) & (s.goes_long > 0)
+        if train_end is not None:
+            ok &= s.time_unix <= train_end
+        if ok.any():
+            xs.append(np.log10(s.goes_long[ok].astype(np.float64)))
+            ys.append(s.log_flux[ok].astype(np.float64))
+    if not xs:
+        return None
+    x, y = np.concatenate(xs), np.concatenate(ys)
+    if x.size < 1000:
+        return None
+    b, a = np.polyfit(x, y, 1)
+    resid = y - (a + b * x)
+    return {"intercept": round(float(a), 4), "slope": round(float(b), 4),
+            "scatter_dex": round(float(np.std(resid)), 4), "n": int(x.size),
+            "mean_log_flux": round(float(np.mean(y)), 4)}
+
+
 def prepare(cfg: Config, verbose: bool = True) -> Prepared:
     sources = index_sources([Path(cfg.data_root)])
     if not sources:
@@ -75,6 +103,11 @@ def prepare(cfg: Config, verbose: bool = True) -> Prepared:
                           verbose=verbose)
     soft_raw = load_cached(entries, cache_dir_for(cfg), "solexs")
     hard_raw = load_cached(entries, cache_dir_for(cfg), "hel1os")
+    n_masked = 0
+    if cfg.pre.exclude_intervals:
+        n_masked = mask_intervals(soft_raw, cfg.pre.exclude_intervals)
+        if verbose:
+            print(f"excluded {n_masked} SoLEXS samples listed in {cfg.pre.exclude_intervals}")
     if not soft_raw and not hard_raw:
         raise RuntimeError("Every source failed or was empty; see the cache manifest.")
 
@@ -116,6 +149,7 @@ def prepare(cfg: Config, verbose: bool = True) -> Prepared:
         "archive_profile": {k: list(v) for k, v in profile.items()},
         "split_mode": mode,
         "n_sources": len(sources),
+        "excluded_solexs_samples": n_masked,
         "cache": {
             "ok": sum(e.get("status") == "ok" for e in entries),
             "empty": sum(e.get("status") == "empty" for e in entries),
@@ -148,6 +182,13 @@ def prepare(cfg: Config, verbose: bool = True) -> Prepared:
             "train_end": float(windows[tr[-1]].t_unix) if tr else None,
             "test_start": float(min(windows[i].t_unix for i in te)),
         }
+    if cfg.pre.fit_flux_anchor and cfg.pre.label_source == "goes":
+        train_end = max(windows[i].t_unix for i in tr) if tr else None
+        fit = fit_flux_anchor(segments, train_end)
+        if fit:
+            cfg.pre.flux_anchor_intercept, cfg.pre.flux_anchor_slope = fit["intercept"], fit["slope"]
+            cfg.pre.flux_anchor_default = fit["mean_log_flux"]
+            meta["flux_anchor_fit"] = fit
 
     if verbose:
         _print_summary(segments, windows, tr, va, te, n_train_all, days, archive,

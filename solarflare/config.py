@@ -137,14 +137,32 @@ class PreprocessConfig:
     #:   unchanged -- SoLEXS and HEL1OS only.
     label_source: str = "solexs"
     #: SoLEXS GOES-long count rate -> log10 GOES XRS-B flux, fitted on the
-    #: training period only (scripts/fair_references.py, 2026-09-15: 0.062 dex).
+    #: training period only (python -m solarflare references, 2026-09-15: 0.062 dex).
     #: Used by ModelConfig.anchor_flux and never as a target.
     flux_anchor_intercept: float = -6.714
     flux_anchor_slope: float = 0.637
     #: Fallback when SoLEXS is not observing at the forecast origin: the
     #: training-period mean log10 flux.
     flux_anchor_default: float = -5.64
+    #: Refit the two numbers above on the training period of the data at hand
+    #: (least squares, log GOES flux on log SoLEXS rate) instead of using them
+    #: as fixed. Off only to reproduce runs up to v4.
+    fit_flux_anchor: bool = False
     goes_dir: str = ""
+    #: JSON of time intervals whose SoLEXS samples are dropped before anything
+    #: else (format of outputs/catalog/solexs_duplicates.json, written by
+    #: python -m solarflare quality: PRADAN day files that repeat the previous
+    #: day's data). Empty = keep everything, as every run before v4 did.
+    exclude_intervals: str = ""
+    #: HEL1OS L1 events (and the 1 s light curves built from them) arrive in
+    #: readout batches every 2-8 s at ordinary rates, so single 20 s bins hold
+    #: zero or two batches. A trailing mean over this many seconds smooths that
+    #: before any HEL1OS feature is computed. 0 = off (runs up to v4).
+    hel1os_smooth_s: float = 0.0
+    #: Folder of SHARP monthly CSVs (io/sharp.py). When set, whole-Sun magnetic
+    #: indicators are appended to the soft X-ray inputs: the latest hourly value
+    #: at or before each moment, plus a flag for "fresher than 3 h". Empty = off.
+    sharp_dir: str = ""
     goes_min_class: str = "C1.0"
     goes_exceed_class: str = "M1.0"
 
@@ -315,6 +333,16 @@ class TrainConfig:
     #: training window can see into a validation/test target.
     embargo_s: float = 3600.0
     early_stop_patience: int = 12
+    #: Early stopping and the saved best epoch follow a trailing mean of the
+    #: validation score over this many epochs. 1 = the raw score (runs up to
+    #: v4). v4's raw score jumped at epoch 5 on one noisy head and would have
+    #: ended the run at epoch 17 with under-trained weights.
+    select_smooth_epochs: int = 1
+    #: Clip each part of the network (encoders, fusion, trunk, pool, each head)
+    #: to grad_clip on its own rather than the whole gradient at once. The peak
+    #: head's gradient runs ~10x the others, so one global clip also shrank
+    #: every other part's update. False reproduces runs up to v4.
+    balance_head_gradients: bool = False
     #: "per_segment", "global", or "auto" (global once the data exceeds
     #: WindowConfig.large_data_days). See dataset.chronological_split.
     split_mode: str = "auto"
@@ -353,6 +381,32 @@ class Config:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(d, indent=2, default=list), encoding="utf-8")
 
+    @classmethod
+    def from_json(cls, path: Path) -> "Config":
+        """The configuration a run was trained with (its reports/config.json)."""
+        d = json.loads(Path(path).read_text(encoding="utf-8"))
+        cfg = cls(data_root=Path(d.get("data_root", ".")), out_dir=Path(d.get("out_dir", "outputs")))
+        if d.get("cache_dir"):
+            cfg.cache_dir = Path(d["cache_dir"])
+        for part in ("pre", "win", "model", "train"):
+            obj = getattr(cfg, part)
+            for k, v in (d.get(part) or {}).items():
+                if hasattr(obj, k):
+                    cur = getattr(obj, k)
+                    setattr(obj, k, tuple(v) if isinstance(v, list) and isinstance(cur, tuple) else v)
+        return cfg
+
     @property
     def steps_per_window(self) -> int:
         return int(round(self.win.input_seconds / self.pre.dt_seconds))
+
+
+def run_config(run_dir: Path) -> Config:
+    """The exact configuration a trained run used, pointed at that run's directory
+    (so a moved or copied run still finds its own checkpoints)."""
+    path = Path(run_dir) / "reports" / "config.json"
+    if not path.exists():
+        raise FileNotFoundError(f"{path} not found: not a trained run (python -m solarflare train)")
+    cfg = Config.from_json(path)
+    cfg.out_dir = Path(run_dir)
+    return cfg

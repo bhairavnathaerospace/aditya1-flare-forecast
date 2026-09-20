@@ -6,8 +6,8 @@ convolutional network with mask-aware cross-modal fusion.
 
 Quick start::
 
-    python -m solarflare.cli inspect
-    python -m solarflare.cli train
+    python -m solarflare inspect
+    python -m solarflare train
 """
 
 __version__ = "1.0.0"

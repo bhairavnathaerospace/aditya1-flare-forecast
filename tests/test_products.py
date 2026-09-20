@@ -17,7 +17,7 @@ What is checked, each on synthetic data with a known answer:
 * temperature: the continuum fit recovers a known temperature through the
   silicon efficiency, and the efficiency falls above 10 keV;
 * data quality: hours a SoLEXS day file copies from the previous day are masked;
-* multi-hour: TSS at a threshold and its best threshold.
+* day-ahead: TSS at a threshold and its best threshold.
 
     python -m tests.test_products
 """
@@ -32,14 +32,12 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-sys.path.insert(0, str(ROOT / "scripts"))
 
-import hxr_spectra  # noqa: E402
-import hxr_timing  # noqa: E402
-import lead_time  # noqa: E402
-import multihour_forecast  # noqa: E402
-import solexs_temperature  # noqa: E402
 from solarflare.io import hel1os_events as he  # noqa: E402
+from solarflare.products import dayahead as multihour_forecast  # noqa: E402
+from solarflare.products import hxr_spectra, hxr_timing  # noqa: E402
+from solarflare.products import leadtime as lead_time  # noqa: E402
+from solarflare.products import temperature as solexs_temperature  # noqa: E402
 
 FAILURES: list[str] = []
 
@@ -227,7 +225,7 @@ def test_temperature_fit_recovers_truth():
 def test_duplicate_mask():
     import json
 
-    import master_catalog
+    from solarflare.catalog import build as master_catalog
 
     with tempfile.TemporaryDirectory() as tmp:
         p = Path(tmp) / "dups.json"
@@ -237,6 +235,15 @@ def test_duplicate_mask():
         check("copied intervals are masked, half-open", m.tolist() == [False, True, True, True, False, True, False],
               str(m.tolist()))
         check("no list, no mask", not master_catalog.duplicate_mask(t, Path(tmp) / "missing.json").any())
+        # the training pipeline's version (--exclude-intervals): blanks values and coverage
+        from solarflare.preprocess.cache import mask_intervals
+        from solarflare.preprocess.timeline import GriddedSeries
+        s = GriddedSeries(t.copy(), np.ones((t.size, 2), np.float32), np.ones(t.size, np.float32), ["a", "b"])
+        n = mask_intervals([s], p)
+        check("training mask blanks the copied samples only",
+              n == 4 and np.isnan(s.values[1:4]).all() and np.isnan(s.values[5]).all()
+              and s.coverage[[0, 4, 6]].tolist() == [1, 1, 1] and not np.isnan(s.values[[0, 4, 6]]).any(),
+              f"{n} {s.coverage.tolist()}")
 
 
 # ---------------------------------------------------------------- multi-hour

@@ -46,7 +46,7 @@ import torch
 from .config import Config
 from .metrics import brier_score, reliability, roc_auc, skill_scores
 from .pipeline import cache_dir_for, prepare, resolve_device
-from .preprocess.cache import build_cache, index_sources, load_cached
+from .preprocess.cache import build_cache, index_sources, load_cached, mask_intervals
 from .preprocess.dataset import Normalizer, Segment, build_segments_from_raw, build_targets
 
 FROZEN = "frozen.pt"
@@ -108,17 +108,28 @@ def freeze(cfg: Config, checkpoint: Path, name: str, verbose: bool = True) -> Pa
     _, va, _, _ = make_loaders(prep, cfg)
     val = collect_predictions(model, va, device)
 
-    # Operating points from VALIDATION, frozen now.
-    thresholds = {"in_flare": 0.5, "occurrence": [0.5] * len(cfg.win.occurrence_horizons_s)}
+    # Calibration and operating points, both from VALIDATION, frozen now. The
+    # thresholds apply to the calibrated probabilities the forecasts will carry.
+    from . import probcal
+
+    n_occ = len(cfg.win.occurrence_horizons_s)
     m = val["y_nowcast_mask"] > 0
+    calibration = {"in_flare": probcal.fit(val["p_inflare"][m], val["y_in_flare"][m]),
+                   "occurrence": []}
+    p_in = probcal.apply(calibration["in_flare"], val["p_inflare"])
+    p_occ = np.zeros_like(val["p_occurrence"], dtype=np.float64)
+    for h in range(n_occ):
+        mm = val["y_occurrence_mask"][:, h] > 0
+        calibration["occurrence"].append(probcal.fit(val["p_occurrence"][mm, h], val["y_occurrence"][mm, h]))
+        p_occ[:, h] = probcal.apply(calibration["occurrence"][h], val["p_occurrence"][:, h])
+    thresholds = {"in_flare": 0.5, "occurrence": [0.5] * n_occ}
     if m.sum() and len(np.unique(val["y_in_flare"][m])) > 1:
-        thresholds["in_flare"] = float(best_threshold(val["y_in_flare"][m],
-                                                      val["p_inflare"][m], "TSS")[0])
-    for h in range(len(cfg.win.occurrence_horizons_s)):
+        thresholds["in_flare"] = float(best_threshold(val["y_in_flare"][m], p_in[m], "TSS")[0])
+    for h in range(n_occ):
         mm = val["y_occurrence_mask"][:, h] > 0
         if mm.sum() and len(np.unique(val["y_occurrence"][mm, h])) > 1:
             thresholds["occurrence"][h] = float(best_threshold(
-                val["y_occurrence"][mm, h], val["p_occurrence"][mm, h], "TSS")[0])
+                val["y_occurrence"][mm, h], p_occ[mm, h], "TSS")[0])
 
     climatology = _train_climatology(prep, cfg)
     cutoff = max(float(s.time_unix[np.flatnonzero(np.maximum(s.soft_mask, s.hard_mask))[-1]])
@@ -132,7 +143,7 @@ def freeze(cfg: Config, checkpoint: Path, name: str, verbose: bool = True) -> Pa
         "n_clock": ck["n_clock"],
         "norm": {k: np.asarray(v) for k, v in asdict(norm).items()},
         "config": _cfg_dict(cfg),
-        "thresholds": thresholds, "climatology": climatology,
+        "thresholds": thresholds, "climatology": climatology, "calibration": calibration,
         "data_cutoff_unix": cutoff,
     }
     torch.save(frozen, out / FROZEN)
@@ -147,6 +158,7 @@ def freeze(cfg: Config, checkpoint: Path, name: str, verbose: bool = True) -> Pa
         "data_cutoff_unix": cutoff,
         "normaliser": norm_source,
         "thresholds": thresholds,
+        "calibrated_probabilities": True,
         "training_climatology": climatology,
         "train_end_utc": _utc(prep.meta["split_dates"]["train_end"])
         if prep.meta.get("split_dates") else None,
@@ -231,6 +243,8 @@ def _segments(cfg: Config, verbose: bool) -> tuple[list[Segment], list]:
                           verbose=verbose)
     soft = load_cached(entries, cache_dir_for(cfg), "solexs")
     hard = load_cached(entries, cache_dir_for(cfg), "hel1os")
+    if cfg.pre.exclude_intervals and Path(cfg.pre.exclude_intervals).exists():
+        mask_intervals(soft, cfg.pre.exclude_intervals)
     segments, _ = build_segments_from_raw(soft, hard, cfg)
     return segments, sources
 
@@ -290,6 +304,12 @@ def forward_predict(cfg: Config, name: str, stride_s: float = 60.0,
                       stack(seg.hard_mask), stack(seg.clock))
             p_now = torch.sigmoid(o["in_flare"]).cpu().numpy()
             p_occ = torch.sigmoid(o["occurrence"]).cpu().numpy()
+            cal = frozen.get("calibration")
+            if cal:                     # frozen since calibration existed
+                from . import probcal
+                p_now = probcal.apply(cal["in_flare"], p_now)
+                p_occ = np.column_stack([probcal.apply(cal["occurrence"][h], p_occ[:, h])
+                                         for h in range(p_occ.shape[1])])
             now = o["nowcast"].cpu().numpy()
             fc = o["forecast"].cpu().numpy()
             for k, e in enumerate(batch):

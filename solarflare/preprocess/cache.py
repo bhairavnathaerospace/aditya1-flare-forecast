@@ -359,6 +359,23 @@ def _report(e: dict, i: int, n: int, t0: float, verbose: bool) -> None:
               flush=True)
 
 
+def mask_intervals(series: list[GriddedSeries], path: str | Path) -> int:
+    """Blank (NaN value, zero coverage) every sample inside the intervals listed in
+    ``path`` -- a solexs_duplicates.json-style file. Returns the samples blanked."""
+    data = json.loads(Path(path).read_text(encoding="utf-8"))
+    intervals = [(float(a), float(b)) for d in data.get("duplicates", []) for a, b in d["intervals_unix"]]
+    n = 0
+    for s in series:
+        bad = np.zeros(s.time_unix.size, bool)
+        for a, b in intervals:
+            bad |= (s.time_unix >= a) & (s.time_unix < b)
+        if bad.any():
+            s.values[bad] = np.nan
+            s.coverage[bad] = 0
+            n += int(bad.sum())
+    return n
+
+
 def load_cached(entries: list[dict], cache_dir: Path, kind: str) -> list[GriddedSeries]:
     """Load every successfully cached product of one instrument, time-sorted."""
     out = []

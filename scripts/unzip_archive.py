@@ -14,6 +14,9 @@ Designed to be run repeatedly while a download is still in progress:
 * **Verifies integrity.** Members are streamed through zipfile, which checks
   each CRC-32 as it reads; a corrupt or truncated zip is reported and skipped.
 * **Ignores in-progress downloads** (``*.zip.part``).
+* **Never narrows a full extraction.** A product extracted with ``--members all``
+  counts as done for any narrower filter, so a light-curves-only pass cannot
+  delete event lists already on disk.
 * **Refuses path traversal.** A member whose path would land outside the
   destination is rejected rather than written.
 * **Guards disk space.** Before each zip it checks that extracting it would
@@ -147,6 +150,11 @@ def extract_one(zip_path: Path, dest: Path, member_filter, min_free: int) -> dic
                 if not m.exists():
                     return False
                 old = json.loads(m.read_text(encoding="utf-8"))
+                # A full extraction already holds every member a narrower filter
+                # would write. Re-extracting would replace it with the narrower
+                # set and delete the rest (e.g. 60 GB of HEL1OS event lists).
+                if member_filter is not None and old.get("filter") == "all":
+                    return True
                 if "fingerprint" in old:
                     return old["fingerprint"] == prints[u]
                 # Marker from before fingerprints: trust it only for the zip

@@ -31,8 +31,8 @@ jobs:
 
       - name: Lint
         run: |
-          python -m pyflakes solarflare tests
-          python -m ruff check solarflare tests
+          python -m pyflakes solarflare tests scripts dashboard/console dashboard/job_runner.py dashboard/mission_control.pyw
+          python -m ruff check solarflare tests scripts dashboard
 
       - name: Correctness tests (causality, leakage, masking, splits)
         run: python -m tests.test_correctness
@@ -61,5 +61,8 @@ jobs:
       - name: Catalogue tests (soft rule, HEL1OS bursts, calibration, merge)
         run: python -m tests.test_catalog
 
-      - name: Product tests (lead time, HXR spectra, timing audit, temperature, multi-hour)
+      - name: Product tests (lead time, HXR spectra, timing audit, temperature, day-ahead)
         run: python -m tests.test_products
+
+      - name: Pipeline tests (settings, calibration, SHARP, smoothing, clipping, runner, summary)
+        run: python -m tests.test_pipeline

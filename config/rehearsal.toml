@@ -1,0 +1,32 @@
+# A rehearsal of the whole pipeline: the real data and every stage, but one training
+# epoch of 15 batches, so a wiring mistake shows up in a couple of hours instead of
+# wasting an overnight run. Outputs go to outputs/_rehearsal.
+#
+#   SOLARFLARE_CONFIG=config/rehearsal.toml python -m solarflare pipeline --keep-going
+#
+[paths]
+data_root = "D:/Data"                        # PRADAN downloads + extracted products
+goes_dir = "D:/Data/goes"                    # GOES-18 XRS flare list and 1-min flux (truth)
+sharp_dir = "D:/Data/sharp"                  # SDO/HMI SHARP monthly CSVs (scripts/download_sharp.py)
+hel1os_extracted = "D:/Data/extracted/hel1os"
+cache = "cache"                              # preprocessed products, rebuilt only for new files
+outputs = "outputs/_rehearsal"
+
+[data]
+min_free_gb = 30                             # extraction stops before the disk goes below this
+
+[model]
+labels = "goes"                              # flare truth: GOES-18 flare list, >= goes_min_class
+goes_min_class = "C1.0"
+anchor_flux = true                           # flux heads predict "calibrated SoLEXS flux now + change"
+skip_copied_days = true                      # drop SoLEXS hours a PRADAN file repeats from the previous day
+hel1os_smooth_s = 60                         # HEL1OS arrives in readout batches; average over this before use
+select_smooth_epochs = 3                     # early stopping follows a running mean of the validation score
+early_stop_patience = 15
+balance_head_gradients = true                # clip each part of the network separately (see train.py)
+use_sharp = "auto"                           # "auto": use SHARP as network input only if the ablation says it helps
+set = ["train.epochs=1", "train.large_max_batches_per_epoch=15"]
+
+[pipeline]
+seeds = [1337]
+sharp_min_gain = 0.01                        # SHARP stays a network input only if validation score rises this much

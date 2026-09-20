@@ -21,3 +21,5 @@ torch>=2.4
 scikit-learn>=1.4
 # GOES-R XRS netCDF-4 files (flare list and 1-minute flux) for GOES-labelled training
 h5py>=3.10
+# SDO/HMI SHARP keywords from JSOC (scripts/download_sharp.py only; no account needed)
+drms>=0.7

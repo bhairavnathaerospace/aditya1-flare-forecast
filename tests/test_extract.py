@@ -117,6 +117,9 @@ with tempfile.TemporaryDirectory() as d:
     rc, log = run(root / "dl", "--dest", str(root / "lc"), "--instrument", "hel1os")
     check("HEL1OS default (lightcurves) skips event lists",
           not list((root / "lc").rglob("evt.fits")) and len(list((root / "lc").rglob("lightcurve_czt1.fits"))) == 3, log)
+    rc, log = run(root / "dl", "--dest", str(out), "--instrument", "hel1os", "--members", "lightcurves")
+    check("HEL1OS: a light-curves pass never deletes a full extraction's event lists",
+          len(list(out.rglob("evt.fits"))) == 3 and "'skipped': 3" in log, log)
 
 # --- HEL1OS zip holding TWO products, next to another zip for the same day ----
 with tempfile.TemporaryDirectory() as d:
